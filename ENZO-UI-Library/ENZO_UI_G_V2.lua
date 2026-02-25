@@ -2336,7 +2336,7 @@ local DropSearchBox = Create("TextBox", {
     Parent = Content
 })
 AddCorner(DropSearchBox, 4)
-                
+
 local ItemsList = Create("ScrollingFrame", {
     BackgroundTransparency = 1,
     Position = UDim2.new(0, 0, 0, 0), -- Will be adjusted when search visible
@@ -2347,10 +2347,10 @@ local ItemsList = Create("ScrollingFrame", {
 })
 AddPadding(ItemsList, 3, 3, 4, 4)
 Create("UIListLayout", {Padding = UDim.new(0, 3), Parent = ItemsList})
-                
+
 local itemBtns = {}
 local allItems = {} -- Store all items for filtering
-                
+
 local function createItem(name)
     local isSel = multi and Dropdown.Value[name] or Dropdown.Value == name
     
@@ -2364,7 +2364,7 @@ local function createItem(name)
         Parent = ItemsList
     })
     AddCorner(ItemBtn, 4)
-                    
+    
     Create("TextLabel", {
         Name = "Text",
         BackgroundTransparency = 1,
@@ -2377,7 +2377,7 @@ local function createItem(name)
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = ItemBtn
     })
-                    
+    
     ItemBtn.MouseButton1Click:Connect(function()
         if multi then
             Dropdown.Value[name] = not Dropdown.Value[name]
@@ -2440,7 +2440,7 @@ for _, item in pairs(items) do
     itemBtns[item] = createItem(item) 
 end
 
-                
+-- GANTI DropBtn.MouseButton1Click dengan ini:
 DropBtn.MouseButton1Click:Connect(function()
     Dropdown.Open = not Dropdown.Open
     
@@ -2472,6 +2472,7 @@ DropBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- GANTI function Dropdown:SetItems dengan ini:
 function Dropdown:SetItems(newItems)
     Dropdown.Items = newItems
     items = newItems
@@ -2484,13 +2485,6 @@ function Dropdown:SetItems(newItems)
         itemBtns[item] = createItem(item) 
     end
 end
-                
-                ConfigSys:RegisterElement(id, Dropdown, multi and {} or cfg.Default)
-                Window.SearchableElements[id] = {Title = cfg.Title or "Dropdown", Tab = Tab, Element = Dropdown, Frame = Frame}
-                
-                table.insert(Section.Elements, Dropdown)
-                return Dropdown
-            end
             
             -- ========== LABEL ==========
 function Section:AddLabel(text)
