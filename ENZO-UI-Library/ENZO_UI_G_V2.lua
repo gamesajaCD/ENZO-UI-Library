@@ -677,7 +677,7 @@ function EnzoLib:CreateWindow(config)
         BackgroundColor3 = Colors.BackgroundLight,
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 0),
-        Size = UDim2.new(0, 5, 0, 30),
+        Size = UDim2.new(0, 200, 0, 30),
         ZIndex = 11,
         Parent = Header
     })
