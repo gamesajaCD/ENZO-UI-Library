@@ -1119,29 +1119,34 @@ function EnzoLib:CreateWindow(config)
     -- FIXED: Opacity Logic - Now properly makes UI transparent
     local opacityDragging = false
     
-    local function UpdateOpacity(pos)
-        currentOpacity = pos
-        OpacityFill.Size = UDim2.new(pos, 0, 1, 0)
-        OpacityKnob.Position = UDim2.new(pos, -5, 0.5, -5)
-        OpacityLabel.Text = math.floor(pos * 100) .. "%"
-        
-        -- Calculate transparency (1 = fully visible, 0 = fully transparent)
-        -- When opacity slider is at 100%, transparency should be 0 (opaque)
-        -- When opacity slider is at 0%, transparency should be ~0.95 (almost invisible)
-        local transparency = (1 - pos) * 0.95
-        
-        -- Apply to main frame
-        Main.BackgroundTransparency = transparency
-        InnerMask.BackgroundTransparency = transparency
-        
-        -- Apply to all tracked transparent elements
-        for _, elem in pairs(TransparentElements) do
-            if elem.Object and elem.Object.Parent then
-                local newTrans = elem.BaseTransparency + (1 - elem.BaseTransparency) * (1 - pos) * 0.9
-                elem.Object.BackgroundTransparency = math.min(newTrans, 0.95)
-            end
-        end
-    end
+local function UpdateOpacity(pos)
+    currentOpacity = pos
+    OpacityFill.Size = UDim2.new(pos, 0, 1, 0)
+    OpacityKnob.Position = UDim2.new(pos, -5, 0.5, -5)
+    OpacityLabel.Text = math.floor(pos * 100) .. "%"
+    
+    -- FIXED: Opacity mengontrol SEMUA element termasuk border
+    -- pos = 1 (100%) = fully visible
+    -- pos = 0 (0%) = almost invisible
+    
+    local bgTransparency = (1 - pos) * 0.9
+    
+    -- Main frame
+    Main.BackgroundTransparency = bgTransparency
+    
+    -- Inner mask (harus sama dengan main)
+    InnerMask.BackgroundTransparency = bgTransparency
+    
+    -- Border gradient juga harus ikut transparan
+    BorderGradient.BackgroundTransparency = bgTransparency
+    
+    -- Header & Footer
+    Header.BackgroundTransparency = 0.3 + (1 - pos) * 0.6
+    Footer.BackgroundTransparency = 0.3 + (1 - pos) * 0.6
+    
+    -- Tab container
+    TabContainer.BackgroundTransparency = bgTransparency
+end
     
     OpacityTrack.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1256,53 +1261,6 @@ function EnzoLib:CreateWindow(config)
         Tween(ScaleHandle, {BackgroundTransparency = 0.3, Size = UDim2.new(0, 20, 0, 20)}, 0.15)
     end)
     
-    -- ============================================
-    -- MINIMIZE TRAY ICON
-    -- ============================================
-    local TrayIcon = Create("TextButton", {
-        Name = "TrayIcon",
-        BackgroundColor3 = CurrentTheme.Primary,
-        Position = UDim2.new(0.5, -20, 0.5, -20),
-        Size = UDim2.new(0, 40, 0, 40),
-        Visible = false,
-        ZIndex = 999,
-        Text = "",
-        AutoButtonColor = false,
-        Parent = ScaleContainer
-    })
-    AddCorner(TrayIcon, 20)
-    AddGradient(TrayIcon, {CurrentTheme.Primary, CurrentTheme.Secondary}, 135)
-    AddGlow(TrayIcon, CurrentTheme.Primary, 10, 0.6)
-    
-    if logoImage then
-        Create("ImageLabel", {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0.6, 0, 0.6, 0),
-            Position = UDim2.new(0.2, 0, 0.2, 0),
-            ZIndex = 1000,
-            Image = logoImage,
-            ImageColor3 = Colors.Text,
-            ScaleType = Enum.ScaleType.Fit,
-            Parent = TrayIcon
-        })
-    else
-        Create("TextLabel", {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 1, 0),
-            ZIndex = 1000,
-            Font = Enum.Font.GothamBlack,
-            Text = "E",
-            TextColor3 = Colors.Text,
-            TextSize = 18,
-            Parent = TrayIcon
-        })
-    end
-    
-    MakeDraggable(TrayIcon, TrayIcon)
-    
-    TrayIcon.MouseButton1Click:Connect(function()
-        Window:Restore()
-    end)
     
     -- Toggle Key Handler
     table.insert(Window.Connections, UserInputService.InputBegan:Connect(function(input, processed)
@@ -1353,37 +1311,32 @@ function EnzoLib:CreateWindow(config)
         end
     end
     
-    function Window:Minimize()
-        self.Minimized = true
-        self.Visible = false
-        
-        Tween(Main, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
-        Tween(Blur, {Size = 0}, 0.3)
-        
-        task.delay(0.3, function()
-            Main.Visible = false
-            TrayIcon.Visible = true
-            TrayIcon.Size = UDim2.new(0, 0, 0, 0)
-            Tween(TrayIcon, {Size = UDim2.new(0, 40, 0, 40)}, 0.3, Enum.EasingStyle.Back)
-        end)
-    end
+function Window:Minimize()
+    self.Minimized = true
+    self.Visible = false
     
-    function Window:Restore()
-        self.Minimized = false
-        self.Visible = true
-        
-        Tween(TrayIcon, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
-        
-        task.delay(0.2, function()
-            TrayIcon.Visible = false
-            Main.Visible = true
-            local targetSize = self.Expanded and expandedSize or baseSize
-            Main.Size = UDim2.new(0, targetSize.X.Offset, 0, 0)
-            
-            Tween(Main, {Size = targetSize}, 0.5, Enum.EasingStyle.Back)
-            Tween(Blur, {Size = 12}, 0.3)
-        end)
-    end
+    Tween(Main, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
+    Tween(Blur, {Size = 0}, 0.3)
+    
+    task.delay(0.3, function()
+        Main.Visible = false
+        -- HAPUS semua code TrayIcon di sini
+    end)
+end
+    
+function Window:Restore()
+    self.Minimized = false
+    self.Visible = true
+    
+    -- HAPUS: Tween(TrayIcon, ...) dan TrayIcon.Visible = false
+    
+    Main.Visible = true
+    local targetSize = self.Expanded and expandedSize or baseSize
+    Main.Size = UDim2.new(0, targetSize.X.Offset, 0, 0)
+    
+    Tween(Main, {Size = targetSize}, 0.5, Enum.EasingStyle.Back)
+    Tween(Blur, {Size = 12}, 0.3)
+end
     
     function Window:Destroy()
         for _, connection in pairs(self.Connections) do
