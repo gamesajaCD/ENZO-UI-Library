@@ -523,7 +523,7 @@ function EnzoLib:CreateWindow(config)
     local Main = Create("Frame", {
         Name = "Main",
         BackgroundColor3 = Colors.Background,
-        BackgroundTransparency = 0,
+        BackgroundTransparency = 0.1
         Position = UDim2.new(0.5, -baseSize.X.Offset/2, 0.5, -baseSize.Y.Offset/2),
         Size = baseSize,
         Parent = ScaleContainer
@@ -573,7 +573,7 @@ function EnzoLib:CreateWindow(config)
     local InnerMask = Create("Frame", {
         Name = "InnerMask",
         BackgroundColor3 = Colors.Background,
-        BackgroundTransparency = 0,
+        BackgroundTransparency = 0.1
         Size = UDim2.new(1, -4, 1, -4),
         Position = UDim2.new(0, 2, 0, 2),
         ZIndex = 1,
@@ -643,32 +643,32 @@ function EnzoLib:CreateWindow(config)
     end
     
     -- Title Area
-    Create("TextLabel", {
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 60, 0, 10),
-        Size = UDim2.new(0, 180, 0, 20),
-        ZIndex = 11,
-        Font = Enum.Font.GothamBlack,
-        Text = title,
-        TextColor3 = Colors.Text,
-        TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextTruncate = Enum.TextTruncate.AtEnd,
-        Parent = Header
-    })
+Create("TextLabel", {
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 60, 0, 12),  -- Adjust position sedikit
+    Size = UDim2.new(0, 180, 0, 16),     -- Kurangi height
+    ZIndex = 11,
+    Font = Enum.Font.GothamBlack,
+    Text = title,
+    TextColor3 = Colors.Text,
+    TextSize = 13,                        -- GANTI dari 16 ke 13
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextTruncate = Enum.TextTruncate.AtEnd,
+    Parent = Header
+})
     
-    Create("TextLabel", {
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 60, 0, 32),
-        Size = UDim2.new(0, 180, 0, 14),
-        ZIndex = 11,
-        Font = Enum.Font.Gotham,
-        Text = subtitle,
-        TextColor3 = Colors.TextMuted,
-        TextSize = 13,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = Header
-    })
+Create("TextLabel", {
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 60, 0, 30),  -- Adjust position
+    Size = UDim2.new(0, 180, 0, 12),
+    ZIndex = 11,
+    Font = Enum.Font.Gotham,
+    Text = subtitle,
+    TextColor3 = Colors.TextMuted,
+    TextSize = 9,                         -- Bisa tetap atau kurangi ke 8
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Parent = Header
+})
     
     -- ============================================
     -- TAB CONTAINER (Centered)
@@ -677,7 +677,7 @@ function EnzoLib:CreateWindow(config)
         BackgroundColor3 = Colors.BackgroundLight,
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 0),
-        Size = UDim2.new(0, 200, 0, 30),
+        Size = UDim2.new(0, 230, 0, 30),
         ZIndex = 11,
         Parent = Header
     })
@@ -1125,27 +1125,36 @@ local function UpdateOpacity(pos)
     OpacityKnob.Position = UDim2.new(pos, -5, 0.5, -5)
     OpacityLabel.Text = math.floor(pos * 100) .. "%"
     
-    -- FIXED: Opacity mengontrol SEMUA element termasuk border
-    -- pos = 1 (100%) = fully visible
-    -- pos = 0 (0%) = almost invisible
+    -- pos = 1 (100%) = Normal appearance, theme colors visible
+    -- pos = 0 (0%) = Almost fully transparent
     
-    local bgTransparency = (1 - pos) * 0.9
+    -- Saat 100%: Main sedikit transparan (0.1) agar aurora border terlihat
+    -- Saat 0%: Hampir invisible (0.95)
+    local mainTransparency = 0.1 + (1 - pos) * 0.85
     
-    -- Main frame
-    Main.BackgroundTransparency = bgTransparency
+    -- Apply to main elements
+    Main.BackgroundTransparency = mainTransparency
+    InnerMask.BackgroundTransparency = mainTransparency
     
-    -- Inner mask (harus sama dengan main)
-    InnerMask.BackgroundTransparency = bgTransparency
+    -- Border gradient: selalu visible, tapi fade saat opacity rendah
+    BorderGradient.BackgroundTransparency = (1 - pos) * 0.8
     
-    -- Border gradient juga harus ikut transparan
-    BorderGradient.BackgroundTransparency = bgTransparency
-    
-    -- Header & Footer
-    Header.BackgroundTransparency = 0.3 + (1 - pos) * 0.6
-    Footer.BackgroundTransparency = 0.3 + (1 - pos) * 0.6
+    -- Header & Footer: base 0.2, max 0.9
+    local headerTrans = 0.2 + (1 - pos) * 0.7
+    Header.BackgroundTransparency = headerTrans
+    Footer.BackgroundTransparency = headerTrans
     
     -- Tab container
-    TabContainer.BackgroundTransparency = bgTransparency
+    TabContainer.BackgroundTransparency = 0.1 + (1 - pos) * 0.8
+    
+    -- Section cards juga ikut transparent
+    for _, tab in pairs(Window.Tabs) do
+        for _, section in pairs(tab.Sections) do
+            if section.Card then
+                section.Card.BackgroundTransparency = 0.1 + (1 - pos) * 0.8
+            end
+        end
+    end
 end
     
     OpacityTrack.InputBegan:Connect(function(input)
@@ -1769,7 +1778,7 @@ end
                 local id = cfg.Id or (sectionName .. "_" .. (cfg.Title or "Toggle"))
                 local Toggle = {Value = cfg.Default or false, Id = id}
                 
-                local Frame = Create("Frame", {
+                LayoutOrder = #Section.Elements + 1,
                     BackgroundColor3 = Colors.BackgroundLight,
                     Size = UDim2.new(1, 0, 0, cfg.Description and 44 or 34),
                     Parent = SectionContent
@@ -1895,7 +1904,7 @@ end
                 local min, max = cfg.Min or 0, cfg.Max or 100
                 local Slider = {Value = cfg.Default or min, Id = id}
                 
-                local Frame = Create("Frame", {
+                LayoutOrder = #Section.Elements + 1,
                     BackgroundColor3 = Colors.BackgroundLight,
                     Size = UDim2.new(1, 0, 0, cfg.Description and 50 or 42),
                     Parent = SectionContent
@@ -2074,7 +2083,7 @@ end
                 local id = cfg.Id or (sectionName .. "_" .. (cfg.Title or "TextBox"))
                 local TextBoxElement = {Value = cfg.Default or "", Id = id}
                 
-                local Frame = Create("Frame", {
+                LayoutOrder = #Section.Elements + 1,
                     BackgroundColor3 = Colors.BackgroundLight,
                     Size = UDim2.new(1, 0, 0, cfg.Description and 50 or 34),
                     Parent = SectionContent
@@ -2152,7 +2161,7 @@ end
                 local Keybind = {Value = cfg.Default or Enum.KeyCode.E, Id = id}
                 local listening = false
                 
-                local Frame = Create("Frame", {
+                LayoutOrder = #Section.Elements + 1,
                     BackgroundColor3 = Colors.BackgroundLight,
                     Size = UDim2.new(1, 0, 0, 34),
                     Parent = SectionContent
@@ -2244,7 +2253,7 @@ end
                 
                 local baseH = 48
                 
-                local Frame = Create("Frame", {
+                LayoutOrder = #Section.Elements + 1,
                     BackgroundColor3 = Colors.BackgroundLight,
                     Size = UDim2.new(1, 0, 0, baseH),
                     ClipsDescendants = true,
@@ -2300,127 +2309,181 @@ end
                     Parent = DropBtn
                 })
                 
-                local Content = Create("Frame", {
-                    BackgroundColor3 = Colors.Card,
-                    Position = UDim2.new(0, 8, 0, baseH + 2),
-                    Size = UDim2.new(1, -16, 0, 0),
-                    ClipsDescendants = true,
-                    Parent = Frame
-                })
-                AddCorner(Content, 6)
-                AddStroke(Content, CurrentTheme.Primary, 1, 0.7)
+local Content = Create("Frame", {
+    BackgroundColor3 = Colors.Card,
+    Position = UDim2.new(0, 8, 0, baseH + 2),
+    Size = UDim2.new(1, -16, 0, 0),
+    ClipsDescendants = true,
+    Parent = Frame
+})
+AddCorner(Content, 6)
+AddStroke(Content, CurrentTheme.Primary, 1, 0.7)
+
+-- BARU: Search Box di dalam Dropdown
+local DropSearchBox = Create("TextBox", {
+    BackgroundColor3 = Colors.BackgroundDark,
+    Position = UDim2.new(0, 4, 0, 4),
+    Size = UDim2.new(1, -8, 0, 20),
+    Font = Enum.Font.GothamMedium,
+    Text = "",
+    PlaceholderText = "🔍 Search...",
+    PlaceholderColor3 = Colors.TextDark,
+    TextColor3 = Colors.Text,
+    TextSize = 9,
+    ClearTextOnFocus = false,
+    Visible = false,
+    ZIndex = 2,
+    Parent = Content
+})
+AddCorner(DropSearchBox, 4)
                 
-                local ItemsList = Create("ScrollingFrame", {
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 1, 0),
-                    ScrollBarThickness = 2,
-                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                    Parent = Content
-                })
-                AddPadding(ItemsList, 3, 3, 4, 4)
-                Create("UIListLayout", {Padding = UDim.new(0, 3), Parent = ItemsList})
+local ItemsList = Create("ScrollingFrame", {
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 0, 0, 0), -- Will be adjusted when search visible
+    Size = UDim2.new(1, 0, 1, 0),
+    ScrollBarThickness = 2,
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    Parent = Content
+})
+AddPadding(ItemsList, 3, 3, 4, 4)
+Create("UIListLayout", {Padding = UDim.new(0, 3), Parent = ItemsList})
                 
-                local itemBtns = {}
+local itemBtns = {}
+local allItems = {} -- Store all items for filtering
                 
-                local function createItem(name)
-                    local isSel = multi and Dropdown.Value[name] or Dropdown.Value == name
+local function createItem(name)
+    local isSel = multi and Dropdown.Value[name] or Dropdown.Value == name
+    
+    local ItemBtn = Create("TextButton", {
+        Name = name,
+        BackgroundColor3 = isSel and CurrentTheme.Primary or Colors.BackgroundLight,
+        BackgroundTransparency = isSel and 0.7 or 0.3,
+        Size = UDim2.new(1, -6, 0, 22),
+        Text = "",
+        AutoButtonColor = false,
+        Parent = ItemsList
+    })
+    AddCorner(ItemBtn, 4)
                     
-                    local ItemBtn = Create("TextButton", {
-                        Name = name,
-                        BackgroundColor3 = isSel and CurrentTheme.Primary or Colors.BackgroundLight,
-                        BackgroundTransparency = isSel and 0.7 or 0.3,
-                        Size = UDim2.new(1, -6, 0, 22),
-                        Text = "",
-                        AutoButtonColor = false,
-                        Parent = ItemsList
-                    })
-                    AddCorner(ItemBtn, 4)
+    Create("TextLabel", {
+        Name = "Text",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 8, 0, 0),
+        Size = UDim2.new(1, -14, 1, 0),
+        Font = Enum.Font.GothamMedium,
+        Text = name,
+        TextColor3 = isSel and Colors.Text or Colors.TextSecondary,
+        TextSize = 9,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = ItemBtn
+    })
                     
-                    Create("TextLabel", {
-                        Name = "Text",
-                        BackgroundTransparency = 1,
-                        Position = UDim2.new(0, 8, 0, 0),
-                        Size = UDim2.new(1, -14, 1, 0),
-                        Font = Enum.Font.GothamMedium,
-                        Text = name,
-                        TextColor3 = isSel and Colors.Text or Colors.TextSecondary,
-                        TextSize = 9,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        Parent = ItemBtn
-                    })
-                    
-                    ItemBtn.MouseButton1Click:Connect(function()
-                        if multi then
-                            Dropdown.Value[name] = not Dropdown.Value[name]
-                            local nowSel = Dropdown.Value[name]
-                            
-                            Tween(ItemBtn, {BackgroundColor3 = nowSel and CurrentTheme.Primary or Colors.BackgroundLight, BackgroundTransparency = nowSel and 0.7 or 0.3}, 0.15)
-                            ItemBtn:FindFirstChild("Text").TextColor3 = nowSel and Colors.Text or Colors.TextSecondary
-                            
-                            local sel = {}
-                            for k, v in pairs(Dropdown.Value) do if v then table.insert(sel, k) end end
-                            BtnText.Text = #sel > 0 and table.concat(sel, ", ") or "None"
-                            
-                            if cfg.Callback then cfg.Callback(Dropdown.Value) end
-                        else
-                            Dropdown.Value = name
-                            BtnText.Text = name
-                            BtnText.TextColor3 = Colors.Text
-                            
-                            for n, btn in pairs(itemBtns) do
-                                local isThis = n == name
-                                Tween(btn, {BackgroundColor3 = isThis and CurrentTheme.Primary or Colors.BackgroundLight, BackgroundTransparency = isThis and 0.7 or 0.3}, 0.15)
-                                btn:FindFirstChild("Text").TextColor3 = isThis and Colors.Text or Colors.TextSecondary
-                            end
-                            
-                            if cfg.Callback then cfg.Callback(name) end
-                            
-                            Dropdown.Open = false
-                            Tween(Arrow, {Rotation = 0}, 0.2)
-                            Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH)}, 0.25)
-                            Tween(Content, {Size = UDim2.new(1, -16, 0, 0)}, 0.25)
-                        end
-                        
-                        if ConfigSys.Elements[id] then ConfigSys.Elements[id].Value = Dropdown.Value end
-                    end)
-                    
-                    return ItemBtn
-                end
+    ItemBtn.MouseButton1Click:Connect(function()
+        if multi then
+            Dropdown.Value[name] = not Dropdown.Value[name]
+            local nowSel = Dropdown.Value[name]
+            
+            Tween(ItemBtn, {BackgroundColor3 = nowSel and CurrentTheme.Primary or Colors.BackgroundLight, BackgroundTransparency = nowSel and 0.7 or 0.3}, 0.15)
+            ItemBtn:FindFirstChild("Text").TextColor3 = nowSel and Colors.Text or Colors.TextSecondary
+            
+            local sel = {}
+            for k, v in pairs(Dropdown.Value) do if v then table.insert(sel, k) end end
+            BtnText.Text = #sel > 0 and table.concat(sel, ", ") or "None"
+            
+            if cfg.Callback then cfg.Callback(Dropdown.Value) end
+        else
+            Dropdown.Value = name
+            BtnText.Text = name
+            BtnText.TextColor3 = Colors.Text
+            
+            for n, btn in pairs(itemBtns) do
+                local isThis = n == name
+                Tween(btn, {BackgroundColor3 = isThis and CurrentTheme.Primary or Colors.BackgroundLight, BackgroundTransparency = isThis and 0.7 or 0.3}, 0.15)
+                btn:FindFirstChild("Text").TextColor3 = isThis and Colors.Text or Colors.TextSecondary
+            end
+            
+            if cfg.Callback then cfg.Callback(name) end
+            
+            Dropdown.Open = false
+            Tween(Arrow, {Rotation = 0}, 0.2)
+            Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH)}, 0.25)
+            Tween(Content, {Size = UDim2.new(1, -16, 0, 0)}, 0.25)
+            DropSearchBox.Visible = false
+            DropSearchBox.Text = ""
+        end
+        
+        if ConfigSys.Elements[id] then ConfigSys.Elements[id].Value = Dropdown.Value end
+    end)
+    
+    allItems[name] = ItemBtn
+    return ItemBtn
+end
+
+-- Filter function for search
+local function filterItems(query)
+    query = query:lower()
+    for name, btn in pairs(allItems) do
+        if query == "" or name:lower():find(query, 1, true) then
+            btn.Visible = true
+        else
+            btn.Visible = false
+        end
+    end
+end
+
+-- Search box functionality
+DropSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    filterItems(DropSearchBox.Text)
+end)
+
+for _, item in pairs(items) do 
+    itemBtns[item] = createItem(item) 
+end
+
                 
-                for _, item in pairs(items) do itemBtns[item] = createItem(item) end
-                
-                DropBtn.MouseButton1Click:Connect(function()
-                    Dropdown.Open = not Dropdown.Open
-                    
-                    if Dropdown.Open then
-                        Tween(Arrow, {Rotation = 180}, 0.2)
-                        local contentH = math.min(#items * 25 + 6, 120)
-                        Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH + 4 + contentH)}, 0.3, Enum.EasingStyle.Back)
-                        Tween(Content, {Size = UDim2.new(1, -16, 0, contentH)}, 0.3, Enum.EasingStyle.Back)
-                    else
-                        Tween(Arrow, {Rotation = 0}, 0.2)
-                        Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH)}, 0.25)
-                        Tween(Content, {Size = UDim2.new(1, -16, 0, 0)}, 0.25)
-                    end
-                end)
-                
-                function Dropdown:SetItems(newItems)
-                    Dropdown.Items = newItems
-                    for _, c in pairs(ItemsList:GetChildren()) do if c:IsA("TextButton") then c:Destroy() end end
-                    itemBtns = {}
-                    for _, item in pairs(newItems) do itemBtns[item] = createItem(item) end
-                end
-                
-                function Dropdown:SetValue(v)
-                    Dropdown.Value = v
-                    if multi then
-                        local sel = {}
-                        for k, val in pairs(v) do if val then table.insert(sel, k) end end
-                        BtnText.Text = #sel > 0 and table.concat(sel, ", ") or "None"
-                    else
-                        BtnText.Text = v or "Select..."
-                    end
-                end
+DropBtn.MouseButton1Click:Connect(function()
+    Dropdown.Open = not Dropdown.Open
+    
+    if Dropdown.Open then
+        Tween(Arrow, {Rotation = 180}, 0.2)
+        local contentH = math.min(#items * 25 + 6, 150)
+        
+        -- Show search if more than 5 items
+        if #items > 5 then
+            DropSearchBox.Visible = true
+            ItemsList.Position = UDim2.new(0, 0, 0, 28)
+            ItemsList.Size = UDim2.new(1, 0, 1, -28)
+            contentH = contentH + 28
+        else
+            DropSearchBox.Visible = false
+            ItemsList.Position = UDim2.new(0, 0, 0, 0)
+            ItemsList.Size = UDim2.new(1, 0, 1, 0)
+        end
+        
+        Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH + 4 + contentH)}, 0.3, Enum.EasingStyle.Back)
+        Tween(Content, {Size = UDim2.new(1, -16, 0, contentH)}, 0.3, Enum.EasingStyle.Back)
+    else
+        Tween(Arrow, {Rotation = 0}, 0.2)
+        Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH)}, 0.25)
+        Tween(Content, {Size = UDim2.new(1, -16, 0, 0)}, 0.25)
+        DropSearchBox.Visible = false
+        DropSearchBox.Text = ""
+        filterItems("") -- Reset filter
+    end
+end)
+
+function Dropdown:SetItems(newItems)
+    Dropdown.Items = newItems
+    items = newItems
+    for _, c in pairs(ItemsList:GetChildren()) do 
+        if c:IsA("TextButton") then c:Destroy() end 
+    end
+    itemBtns = {}
+    allItems = {}
+    for _, item in pairs(newItems) do 
+        itemBtns[item] = createItem(item) 
+    end
+end
                 
                 ConfigSys:RegisterElement(id, Dropdown, multi and {} or cfg.Default)
                 Window.SearchableElements[id] = {Title = cfg.Title or "Dropdown", Tab = Tab, Element = Dropdown, Frame = Frame}
@@ -2430,27 +2493,32 @@ end
             end
             
             -- ========== LABEL ==========
-            function Section:AddLabel(text)
-                local Label = {}
-                local LabelFrame = Create("TextLabel", {
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 14),
-                    Font = Enum.Font.GothamMedium,
-                    Text = text,
-                    TextColor3 = Colors.TextMuted,
-                    TextSize = 9,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    Parent = SectionContent
-                })
-                Label.Frame = LabelFrame
-                function Label:SetText(t) LabelFrame.Text = t end
-                return Label
-            end
+function Section:AddLabel(text)
+    local Label = {}
+    local currentOrder = #Section.Elements + 1  -- TAMBAHKAN INI
+    
+    local LabelFrame = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 14),
+        Font = Enum.Font.GothamMedium,
+        Text = text,
+        TextColor3 = Colors.TextMuted,
+        TextSize = 9,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        LayoutOrder = currentOrder,  -- TAMBAHKAN INI
+        Parent = SectionContent
+    })
+    Label.Frame = LabelFrame
+    function Label:SetText(t) LabelFrame.Text = t end
+    
+    table.insert(Section.Elements, Label)  -- TAMBAHKAN INI
+    return Label
+end
             
             -- ========== PARAGRAPH ==========
             function Section:AddParagraph(cfg)
                 cfg = cfg or {}
-                local Frame = Create("Frame", {
+                LayoutOrder = #Section.Elements + 1,
                     BackgroundColor3 = Colors.BackgroundLight,
                     Size = UDim2.new(1, 0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.Y,
