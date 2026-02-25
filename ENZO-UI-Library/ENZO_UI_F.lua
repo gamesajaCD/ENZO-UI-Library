@@ -1640,7 +1640,15 @@ function EnzoLib:CreateWindow(config)
                         local cnt = math.min(#items, 5)
                         local contentH = 46 + (cnt * 34) + 10
                         local totalH = baseH + 8 + contentH
-                        Tween(Frame, {Size = UDim2.new(1, 0,                         Tween(Frame, {Size = UDim2.new(1, 0, 0, totalH)}, 0.3, Enum.EasingStyle.Back)
+                        Tween(Frame, {Size = UDim2.new(1, 0, 0, totalH)}, 0.3, Enum.EasingStyle.Back)
+                        Tween(Content, {Size = UDim2.new(1, -24, 0, contentH)}, 0.3, Enum.EasingStyle.Back)
+                    else
+                        Tween(Arrow, {Rotation = 0}, 0.2)
+                        Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH)}, 0.25)
+                        Tween(Content, {Size = UDim2.new(1, -24, 0, 0)}, 0.25)
+                    end
+                end)
+                                        Tween(Frame, {Size = UDim2.new(1, 0, 0, totalH)}, 0.3, Enum.EasingStyle.Back)
                         Tween(Content, {Size = UDim2.new(1, -24, 0, contentH)}, 0.3, Enum.EasingStyle.Back)
                     else
                         Tween(Arrow, {Rotation = 0}, 0.2)
