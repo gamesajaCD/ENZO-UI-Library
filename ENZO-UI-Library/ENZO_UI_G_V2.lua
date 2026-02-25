@@ -5,10 +5,10 @@
     ║                        by ENZO-YT                              ║
     ╠═══════════════════════════════════════════════════════════════╣
     ║  FIXES v2.4.2:                                                 ║
-    ║  • Button Text Contrast (always readable)                     ║
-    ║  • Label/Section Size (larger, more readable)                 ║
-    ║  • Opacity with Glow (glow stays visible)                     ║
-    ║  • Blur parameter in CreateWindow                             ║
+    ║  • Button Text Contrast (selalu readable)                     ║
+    ║  • Label/Section Size (lebih besar)                           ║
+    ║  • Opacity with Glow (glow tetap terlihat)                    ║
+    ║  • Blur parameter di CreateWindow                             ║
     ╚═══════════════════════════════════════════════════════════════╝
 ]]
 
@@ -202,7 +202,6 @@ local function MakeDraggable(frame, handle)
         end
     end)
 end
-
 -- ============================================
 -- CREATE WINDOW
 -- ============================================
@@ -217,7 +216,7 @@ function EnzoLib:CreateWindow(config)
     local showWatermark = config.Watermark ~= false
     local scriptVersion = config.Version or "2.4.2"
     local updateURL = config.UpdateURL
-    local blurEnabled = config.Blur ~= false -- DEFAULT TRUE, bisa di set false
+    local blurEnabled = config.Blur ~= false -- NEW: Blur parameter (default true)
     
     local CurrentTheme = Themes[themeName] or Themes.Aurora
     
@@ -255,7 +254,7 @@ function EnzoLib:CreateWindow(config)
     local BlurEffect = Create("BlurEffect", {
         Name = "EnzoBlur_" .. randomId,
         Size = 0,
-        Enabled = blurEnabled, -- Controlled by parameter
+        Enabled = blurEnabled,
         Parent = Lighting
     })
     
@@ -310,7 +309,7 @@ function EnzoLib:CreateWindow(config)
         Config = ConfigSys,
         SearchableElements = {},
         Theme = CurrentTheme,
-        BlurEnabled = blurEnabled -- Store blur state
+        BlurEnabled = blurEnabled
     }
     
     -- ============================================
@@ -344,7 +343,7 @@ function EnzoLib:CreateWindow(config)
     MakeDraggable(MainFrame)
     
     -- ============================================
-    -- AURORA BORDER
+    -- AURORA BORDER (Glow Effect)
     -- ============================================
     local AuroraBorder = Create("Frame", {
         Name = "AuroraBorder",
@@ -383,7 +382,6 @@ function EnzoLib:CreateWindow(config)
     })
     AddCorner(Header, 12)
     
-    -- Fix corner overlap
     Create("Frame", {
         BackgroundColor3 = Colors.BackgroundDark,
         Position = UDim2.new(0, 0, 1, -12),
@@ -392,7 +390,6 @@ function EnzoLib:CreateWindow(config)
         Parent = Header
     })
     
-    -- Logo
     if logoImage then
         Create("ImageLabel", {
             BackgroundTransparency = 1,
@@ -403,7 +400,6 @@ function EnzoLib:CreateWindow(config)
         })
     end
     
-    -- Title
     Create("TextLabel", {
         BackgroundTransparency = 1,
         Position = UDim2.new(0, logoImage and 55 or 15, 0, 8),
@@ -416,7 +412,6 @@ function EnzoLib:CreateWindow(config)
         Parent = Header
     })
     
-    -- Subtitle
     Create("TextLabel", {
         BackgroundTransparency = 1,
         Position = UDim2.new(0, logoImage and 55 or 15, 0, 26),
@@ -428,6 +423,7 @@ function EnzoLib:CreateWindow(config)
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = Header
     })
+    
     -- ============================================
     -- HEADER CONTROLS
     -- ============================================
@@ -470,18 +466,16 @@ function EnzoLib:CreateWindow(config)
         return btn
     end
     
-    -- Minimize Button
     CreateControlButton("—", Colors.Warning, function()
         Window:Minimize()
     end)
     
-    -- Close Button
     CreateControlButton("×", Colors.Error, function()
         Window:Toggle()
     end)
     
     -- ============================================
-    -- SEARCH BUTTON (Expandable)
+    -- SEARCH BUTTON
     -- ============================================
     local SearchBtn = Create("TextButton", {
         BackgroundColor3 = Colors.BackgroundLight,
@@ -526,14 +520,6 @@ function EnzoLib:CreateWindow(config)
             TweenService:Create(SearchBox, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 24)}):Play()
             TweenService:Create(SearchBtn, TweenInfo.new(0.3), {Position = UDim2.new(1, -180, 0.5, -12)}):Play()
             task.delay(0.3, function() SearchBox.Visible = false end)
-        end
-    end)
-    
-    -- Search functionality
-    SearchBox.Changed:Connect(function(prop)
-        if prop == "Text" then
-            local query = SearchBox.Text:lower()
-            -- Implement search logic here
         end
     end)
     
@@ -640,7 +626,6 @@ function EnzoLib:CreateWindow(config)
             Parent = NotifContent
         })
         
-        -- Header
         local NotifHeader = Create("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, 18),
@@ -659,7 +644,6 @@ function EnzoLib:CreateWindow(config)
             Parent = NotifHeader
         })
         
-        -- Close button
         local CloseBtn = Create("TextButton", {
             BackgroundTransparency = 1,
             Position = UDim2.new(1, -16, 0, 0),
@@ -675,7 +659,6 @@ function EnzoLib:CreateWindow(config)
             task.delay(0.2, function() Notif:Destroy() end)
         end)
         
-        -- Content
         Create("TextLabel", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, 0),
@@ -690,7 +673,6 @@ function EnzoLib:CreateWindow(config)
             Parent = NotifContent
         })
         
-        -- Progress bar
         local ProgressBg = Create("Frame", {
             BackgroundColor3 = Colors.BackgroundLight,
             Position = UDim2.new(0, 0, 1, -3),
@@ -706,7 +688,6 @@ function EnzoLib:CreateWindow(config)
         })
         AddCorner(ProgressFill, 2)
         
-        -- Animate
         TweenService:Create(ProgressFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)}):Play()
         
         task.delay(duration, function()
@@ -730,7 +711,6 @@ function EnzoLib:CreateWindow(config)
                 Size = UDim2.new(0, 700, 0, 450),
                 Position = UDim2.new(0.5, -350, 0.5, -225)
             }):Play()
-            -- Only blur if BlurEnabled is true
             if Window.BlurEnabled then
                 TweenService:Create(BlurEffect, TweenInfo.new(0.3), {Size = 15}):Play()
             end
@@ -775,7 +755,6 @@ function EnzoLib:CreateWindow(config)
         end)
     end
     
-    -- Toggle Key Handler
     UserInputService.InputBegan:Connect(function(input, processed)
         if processed then return end
         if input.KeyCode == Window.ToggleKey then
@@ -804,13 +783,10 @@ function EnzoLib:CreateWindow(config)
     AddCorner(ScaleHandle, 4)
     
     local scaling = false
-    local baseSize = MainFrame.Size
-    local baseScale = 1
     
     ScaleHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             scaling = true
-            baseSize = MainFrame.Size
         end
     end)
     
@@ -834,7 +810,7 @@ function EnzoLib:CreateWindow(config)
     end)
     
     -- ============================================
-    -- SETTINGS PANEL (Theme, Opacity)
+    -- SETTINGS PANEL
     -- ============================================
     local SettingsBtn = Create("TextButton", {
         BackgroundColor3 = Colors.BackgroundLight,
@@ -867,7 +843,6 @@ function EnzoLib:CreateWindow(config)
         ContentArea.Visible = not settingsOpen
     end)
     
-    -- Settings Title
     Create("TextLabel", {
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 0, 25),
@@ -879,59 +854,7 @@ function EnzoLib:CreateWindow(config)
         Parent = SettingsPanel
     })
     
-    -- ========== THEME SELECTOR ==========
-    local ThemeLabel = Create("TextLabel", {
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 80),
-        Size = UDim2.new(1, 0, 0, 20),
-        Font = Enum.Font.GothamBold,
-        Text = "Theme",
-        TextColor3 = Colors.Text,
-        TextSize = 11,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = SettingsPanel
-    })
-    
-    local ThemeGrid = Create("Frame", {
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 105),
-        Size = UDim2.new(1, 0, 0, 60),
-        Parent = SettingsPanel
-    })
-    Create("UIGridLayout", {
-        CellSize = UDim2.new(0, 70, 0, 25),
-        CellPadding = UDim2.new(0, 8, 0, 8),
-        Parent = ThemeGrid
-    })
-    
-    for name, theme in pairs(Themes) do
-        local themeBtn = Create("TextButton", {
-            BackgroundColor3 = theme.Primary,
-            Font = Enum.Font.GothamBold,
-            Text = name,
-            TextColor3 = Colors.Text,
-            TextSize = 9,
-            AutoButtonColor = false,
-            Parent = ThemeGrid
-        })
-        AddCorner(themeBtn, 6)
-        AddGradient(themeBtn, {theme.Primary, theme.Secondary}, 90)
-        
-        themeBtn.MouseButton1Click:Connect(function()
-            CurrentTheme = theme
-            Window.Theme = theme
-            -- Update aurora gradient
-            auroraGradient.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, theme.Primary),
-                ColorSequenceKeypoint.new(0.33, theme.Secondary),
-                ColorSequenceKeypoint.new(0.66, theme.Tertiary),
-                ColorSequenceKeypoint.new(1, theme.Primary)
-            })
-            Window:Notify({Title = "Theme Changed", Content = "Applied: " .. name, Type = "Success", Duration = 2})
-        end)
-    end
-    
-    -- ========== OPACITY SLIDER (FIXED - Glow stays visible) ==========
+    -- ========== OPACITY SLIDER (FIXED - Glow tetap terlihat) ==========
     local OpacitySlider = Create("Frame", {
         BackgroundColor3 = Colors.BackgroundLight,
         Position = UDim2.new(0, 0, 0, 40),
@@ -979,13 +902,12 @@ function EnzoLib:CreateWindow(config)
         Parent = OpacitySlider
     })
 
-    -- FIX: Opacity hanya mempengaruhi background, BUKAN glow/aurora border
+    -- FIXED: Opacity hanya mempengaruhi background, BUKAN glow/aurora border
     local function UpdateOpacity(percent)
-        percent = math.clamp(percent, 30, 100) -- Minimum 30%
+        percent = math.clamp(percent, 30, 100)
         OpacityFill.Size = UDim2.new(percent / 100, 0, 1, 0)
         OpacityValue.Text = math.floor(percent) .. "%"
         
-        -- Calculate transparency (inverted)
         local transparency = 1 - (percent / 100)
         
         -- Hanya background yang berubah, AURORA BORDER TETAP SOLID
@@ -993,9 +915,7 @@ function EnzoLib:CreateWindow(config)
         ContentArea.BackgroundTransparency = 0.3 + (transparency * 0.4)
         TabsFrame.BackgroundTransparency = transparency * 0.5
         Header.BackgroundTransparency = transparency * 0.4
-        
         -- AuroraBorder TIDAK berubah - tetap solid untuk glow effect
-        -- AuroraBorder.Transparency tetap 0
     end
 
     local opacityDragging = false
@@ -1020,6 +940,58 @@ function EnzoLib:CreateWindow(config)
             UpdateOpacity(percent)
         end
     end)
+    
+    -- ========== THEME SELECTOR ==========
+    Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 80),
+        Size = UDim2.new(1, 0, 0, 20),
+        Font = Enum.Font.GothamBold,
+        Text = "Theme",
+        TextColor3 = Colors.Text,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = SettingsPanel
+    })
+    
+    local ThemeGrid = Create("Frame", {
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 105),
+        Size = UDim2.new(1, 0, 0, 60),
+        Parent = SettingsPanel
+    })
+    Create("UIGridLayout", {
+        CellSize = UDim2.new(0, 70, 0, 25),
+        CellPadding = UDim2.new(0, 8, 0, 8),
+        Parent = ThemeGrid
+    })
+    
+    for name, theme in pairs(Themes) do
+        local themeBtn = Create("TextButton", {
+            BackgroundColor3 = theme.Primary,
+            Font = Enum.Font.GothamBold,
+            Text = name,
+            TextColor3 = Colors.Text,
+            TextSize = 9,
+            AutoButtonColor = false,
+            Parent = ThemeGrid
+        })
+        AddCorner(themeBtn, 6)
+        AddGradient(themeBtn, {theme.Primary, theme.Secondary}, 90)
+        
+        themeBtn.MouseButton1Click:Connect(function()
+            CurrentTheme = theme
+            Window.Theme = theme
+            auroraGradient.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, theme.Primary),
+                ColorSequenceKeypoint.new(0.33, theme.Secondary),
+                ColorSequenceKeypoint.new(0.66, theme.Tertiary),
+                ColorSequenceKeypoint.new(1, theme.Primary)
+            })
+            Window:Notify({Title = "Theme Changed", Content = "Applied: " .. name, Type = "Success", Duration = 2})
+        end)
+    end
+    
     -- ============================================
     -- WATERMARK
     -- ============================================
@@ -1064,7 +1036,7 @@ function EnzoLib:CreateWindow(config)
     end
     
     -- ============================================
-    -- ADD CONFIG MANAGER TAB
+    -- CONFIG MANAGER
     -- ============================================
     function Window:AddConfigManager()
         local ConfigTab = Window:AddTab({Title = "Configs", Icon = "💾"})
@@ -1089,6 +1061,7 @@ function EnzoLib:CreateWindow(config)
                     local cfg = ConfigSys:GetConfig()
                     local json = HttpService:JSONEncode(cfg)
                     if writefile then
+                        pcall(function() makefolder("EnzoConfigs") end)
                         writefile("EnzoConfigs/" .. configNameInput .. ".json", json)
                         Window:Notify({Title = "Config Saved", Content = "Saved: " .. configNameInput, Type = "Success", Duration = 3})
                     else
@@ -1119,7 +1092,6 @@ function EnzoLib:CreateWindow(config)
         
         return ConfigTab
     end
-    
     -- ============================================
     -- ADD TAB
     -- ============================================
@@ -1133,7 +1105,6 @@ function EnzoLib:CreateWindow(config)
             Content = nil
         }
         
-        -- Tab Button
         local TabBtn = Create("TextButton", {
             BackgroundColor3 = Colors.BackgroundLight,
             BackgroundTransparency = 1,
@@ -1146,7 +1117,6 @@ function EnzoLib:CreateWindow(config)
         })
         AddCorner(TabBtn, 8)
         
-        -- Tab Icon & Text
         local TabContent = Create("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
@@ -1177,7 +1147,6 @@ function EnzoLib:CreateWindow(config)
             Parent = TabContent
         })
         
-        -- Tab Badge
         local TabBadge = Create("Frame", {
             BackgroundColor3 = Colors.Error,
             Position = UDim2.new(1, -20, 0.5, -8),
@@ -1207,7 +1176,6 @@ function EnzoLib:CreateWindow(config)
             end
         end
         
-        -- Tab Content Container
         local TabContainer = Create("ScrollingFrame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
@@ -1220,7 +1188,6 @@ function EnzoLib:CreateWindow(config)
         })
         AddPadding(TabContainer, 10)
         
-        -- Two Column Layout
         local ColumnsFrame = Create("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 0, 0),
@@ -1258,9 +1225,7 @@ function EnzoLib:CreateWindow(config)
         Tab.LeftColumn = LeftColumn
         Tab.RightColumn = RightColumn
         
-        -- Tab Selection
         local function SelectTab()
-            -- Deselect all
             for _, t in ipairs(Window.Tabs) do
                 t.Content.Visible = false
                 TweenService:Create(t.Button, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
@@ -1271,7 +1236,6 @@ function EnzoLib:CreateWindow(config)
                 end
             end
             
-            -- Select this tab
             Tab.Content.Visible = true
             Window.ActiveTab = Tab
             TweenService:Create(TabBtn, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
@@ -1296,7 +1260,6 @@ function EnzoLib:CreateWindow(config)
             end
         end)
         
-        -- Auto select first tab
         if #Window.Tabs == 0 then
             SelectTab()
         end
@@ -1325,7 +1288,6 @@ function EnzoLib:CreateWindow(config)
             AddCorner(SectionFrame, 10)
             AddStroke(SectionFrame, Colors.Border, 1)
             
-            -- Section Header
             local SectionHeader = Create("Frame", {
                 BackgroundColor3 = Colors.BackgroundDark,
                 Size = UDim2.new(1, 0, 0, 32),
@@ -1341,6 +1303,7 @@ function EnzoLib:CreateWindow(config)
                 Parent = SectionHeader
             })
             
+            -- FIXED: Section header text size
             Create("TextLabel", {
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0, 12, 0, 0),
@@ -1348,12 +1311,11 @@ function EnzoLib:CreateWindow(config)
                 Font = Enum.Font.GothamBold,
                 Text = (config.Icon or "📁") .. "  " .. (config.Title or "Section"),
                 TextColor3 = Colors.Text,
-                TextSize = 12, -- FIXED: Larger size
+                TextSize = 12,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Parent = SectionHeader
             })
             
-            -- Section Content
             local SectionContent = Create("Frame", {
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0, 0, 0, 32),
@@ -1376,7 +1338,6 @@ function EnzoLib:CreateWindow(config)
                 return elementOrder
             end
             
-            -- Tooltip helper
             local function AddTooltip(element, text)
                 if not text then return end
                 
@@ -1419,12 +1380,12 @@ function EnzoLib:CreateWindow(config)
                 
                 local Label = Create("TextLabel", {
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 24), -- FIXED: Larger
+                    Size = UDim2.new(1, 0, 0, 22),
                     LayoutOrder = order,
                     Font = Enum.Font.GothamMedium,
                     Text = text or "Label",
                     TextColor3 = Colors.TextSecondary,
-                    TextSize = 12, -- FIXED: Larger
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true,
                     Parent = SectionContent
@@ -1447,7 +1408,7 @@ function EnzoLib:CreateWindow(config)
                 
                 local DividerFrame = Create("Frame", {
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, 26), -- FIXED: Larger
+                    Size = UDim2.new(1, 0, 0, 24),
                     LayoutOrder = order,
                     Parent = SectionContent
                 })
@@ -1459,7 +1420,7 @@ function EnzoLib:CreateWindow(config)
                         Font = Enum.Font.GothamBold,
                         Text = "— " .. text .. " —",
                         TextColor3 = Colors.TextSecondary,
-                        TextSize = 11, -- FIXED: Larger
+                        TextSize = 11,
                         Parent = DividerFrame
                     })
                 else
@@ -1486,7 +1447,7 @@ function EnzoLib:CreateWindow(config)
                 
                 local Frame = Create("Frame", {
                     BackgroundColor3 = Colors.BackgroundLight,
-                    Size = UDim2.new(1, 0, 0, cfg.Description and 52 or 38), -- FIXED: Larger
+                    Size = UDim2.new(1, 0, 0, cfg.Description and 52 or 38),
                     LayoutOrder = order,
                     Parent = SectionContent
                 })
@@ -1499,7 +1460,7 @@ function EnzoLib:CreateWindow(config)
                     Font = Enum.Font.GothamMedium,
                     Text = cfg.Title or "Toggle",
                     TextColor3 = Colors.Text,
-                    TextSize = 12, -- FIXED: Larger
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = Frame
                 })
@@ -1518,7 +1479,6 @@ function EnzoLib:CreateWindow(config)
                     })
                 end
                 
-                -- Toggle Switch
                 local SwitchBg = Create("Frame", {
                     BackgroundColor3 = Colors.Background,
                     Position = UDim2.new(1, -52, 0.5, -11),
@@ -1580,7 +1540,7 @@ function EnzoLib:CreateWindow(config)
                 return Toggle
             end
             
-            -- ========== SLIDER (dengan AllowInput) ==========
+            -- ========== SLIDER ==========
             function Section:AddSlider(cfg)
                 cfg = cfg or {}
                 local order = GetNextOrder()
@@ -1596,7 +1556,7 @@ function EnzoLib:CreateWindow(config)
                 
                 local Frame = Create("Frame", {
                     BackgroundColor3 = Colors.BackgroundLight,
-                    Size = UDim2.new(1, 0, 0, cfg.Description and 62 or 48), -- FIXED: Larger
+                    Size = UDim2.new(1, 0, 0, cfg.Description and 62 or 48),
                     LayoutOrder = order,
                     Parent = SectionContent
                 })
@@ -1609,12 +1569,11 @@ function EnzoLib:CreateWindow(config)
                     Font = Enum.Font.GothamMedium,
                     Text = cfg.Title or "Slider",
                     TextColor3 = Colors.Text,
-                    TextSize = 12, -- FIXED: Larger
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = Frame
                 })
                 
-                -- Value display (can be input if AllowInput)
                 local ValueDisplay
                 if allowInput then
                     ValueDisplay = Create("TextBox", {
@@ -1721,9 +1680,8 @@ function EnzoLib:CreateWindow(config)
                     end
                 end)
                 
-                -- Input handling for AllowInput
                 if allowInput then
-                    ValueDisplay.FocusLost:Connect(function(enterPressed)
+                    ValueDisplay.FocusLost:Connect(function()
                         local text = ValueDisplay.Text:gsub(suffix, "")
                         local num = tonumber(text)
                         if num then
@@ -1760,12 +1718,11 @@ function EnzoLib:CreateWindow(config)
                 local order = GetNextOrder()
                 local style = cfg.Style or "Primary"
                 
-                -- FIXED: Button styles dengan text yang SELALU PUTIH untuk kontras
                 local ButtonStyles = {
                     Primary = {
                         Background = CurrentTheme.Primary,
                         Gradient = {CurrentTheme.Primary, CurrentTheme.Secondary},
-                        Text = Color3.fromRGB(255, 255, 255), -- ALWAYS WHITE
+                        Text = Color3.fromRGB(255, 255, 255),
                         Hover = CurrentTheme.Secondary
                     },
                     Secondary = {
@@ -1777,13 +1734,13 @@ function EnzoLib:CreateWindow(config)
                     Success = {
                         Background = Color3.fromRGB(34, 197, 94),
                         Gradient = {Color3.fromRGB(34, 197, 94), Color3.fromRGB(22, 163, 74)},
-                        Text = Color3.fromRGB(255, 255, 255), -- ALWAYS WHITE
+                        Text = Color3.fromRGB(255, 255, 255),
                         Hover = Color3.fromRGB(22, 163, 74)
                     },
                     Danger = {
                         Background = Color3.fromRGB(239, 68, 68),
                         Gradient = {Color3.fromRGB(239, 68, 68), Color3.fromRGB(220, 38, 38)},
-                        Text = Color3.fromRGB(255, 255, 255), -- ALWAYS WHITE
+                        Text = Color3.fromRGB(255, 255, 255),
                         Hover = Color3.fromRGB(220, 38, 38)
                     }
                 }
@@ -1792,12 +1749,12 @@ function EnzoLib:CreateWindow(config)
                 
                 local Btn = Create("TextButton", {
                     BackgroundColor3 = btnStyle.Background,
-                    Size = UDim2.new(1, 0, 0, 38), -- FIXED: Larger
+                    Size = UDim2.new(1, 0, 0, 36),
                     LayoutOrder = order,
                     Font = Enum.Font.GothamBold,
                     Text = cfg.Title or "Button",
                     TextColor3 = btnStyle.Text,
-                    TextSize = 13, -- FIXED: Larger
+                    TextSize = 12,
                     AutoButtonColor = false,
                     Parent = SectionContent
                 })
@@ -1816,10 +1773,9 @@ function EnzoLib:CreateWindow(config)
                 end)
                 
                 Btn.MouseButton1Click:Connect(function()
-                    -- Press animation
-                    TweenService:Create(Btn, TweenInfo.new(0.1), {Size = UDim2.new(1, -4, 0, 36)}):Play()
+                    TweenService:Create(Btn, TweenInfo.new(0.1), {Size = UDim2.new(1, -4, 0, 34)}):Play()
                     task.wait(0.1)
-                    TweenService:Create(Btn, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 38)}):Play()
+                    TweenService:Create(Btn, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 36)}):Play()
                     
                     SafeCall(cfg.Callback)
                 end)
@@ -1831,7 +1787,7 @@ function EnzoLib:CreateWindow(config)
                 table.insert(Section.Elements, {Button = Btn})
                 return {Button = Btn}
             end
-            -- ========== INPUT (Enhanced) ==========
+            -- ========== INPUT ==========
             function Section:AddInput(cfg)
                 cfg = cfg or {}
                 local order = GetNextOrder()
@@ -1841,7 +1797,7 @@ function EnzoLib:CreateWindow(config)
                 
                 local Frame = Create("Frame", {
                     BackgroundColor3 = Colors.BackgroundLight,
-                    Size = UDim2.new(1, 0, 0, cfg.Description and 70 or 56), -- FIXED: Larger
+                    Size = UDim2.new(1, 0, 0, cfg.Description and 70 or 56),
                     LayoutOrder = order,
                     Parent = SectionContent
                 })
@@ -1854,7 +1810,7 @@ function EnzoLib:CreateWindow(config)
                     Font = Enum.Font.GothamMedium,
                     Text = cfg.Title or "Input",
                     TextColor3 = Colors.Text,
-                    TextSize = 12, -- FIXED: Larger
+                    TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = Frame
                 })
@@ -1894,7 +1850,6 @@ function EnzoLib:CreateWindow(config)
                 TextBox.FocusLost:Connect(function()
                     local value = TextBox.Text
                     
-                    -- Type validation
                     if cfg.Type == "Number" or cfg.Type == "Integer" then
                         local num = tonumber(value)
                         if num then
@@ -1972,7 +1927,6 @@ function EnzoLib:CreateWindow(config)
                 AddCorner(ColorPreview, 6)
                 AddStroke(ColorPreview, Colors.Border, 1)
                 
-                -- Color Picker Panel
                 local PickerPanel = Create("Frame", {
                     BackgroundColor3 = Colors.Background,
                     Position = UDim2.new(0, 0, 1, 5),
@@ -1985,7 +1939,6 @@ function EnzoLib:CreateWindow(config)
                 AddStroke(PickerPanel, CurrentTheme.Primary, 1)
                 AddPadding(PickerPanel, 10)
                 
-                -- Saturation/Value picker
                 local SVPicker = Create("ImageButton", {
                     BackgroundColor3 = Color3.fromRGB(255, 0, 0),
                     Position = UDim2.new(0, 0, 0, 0),
@@ -2005,7 +1958,6 @@ function EnzoLib:CreateWindow(config)
                 AddCorner(SVCursor, 5)
                 AddStroke(SVCursor, Colors.Background, 2)
                 
-                -- Hue slider
                 local HueSlider = Create("ImageButton", {
                     BackgroundColor3 = Colors.Text,
                     Position = UDim2.new(1, -20, 0, 0),
@@ -2025,7 +1977,6 @@ function EnzoLib:CreateWindow(config)
                 })
                 AddCorner(HueCursor, 2)
                 
-                -- Hex input
                 local HexInput = Create("TextBox", {
                     BackgroundColor3 = Colors.BackgroundLight,
                     Position = UDim2.new(0, 0, 1, -25),
@@ -2050,11 +2001,9 @@ function EnzoLib:CreateWindow(config)
                     SafeCall(cfg.Callback, color)
                 end
                 
-                -- Initialize from default
                 hue, sat, val = defaultColor:ToHSV()
                 UpdateColor()
                 
-                -- SV Picker interaction
                 local svDragging = false
                 SVPicker.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -2062,9 +2011,17 @@ function EnzoLib:CreateWindow(config)
                     end
                 end)
                 
+                local hueDragging = false
+                HueSlider.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        hueDragging = true
+                    end
+                end)
+                
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         svDragging = false
+                        hueDragging = false
                     end
                 end)
                 
@@ -2079,23 +2036,6 @@ function EnzoLib:CreateWindow(config)
                         SVCursor.Position = UDim2.new(x, -5, y, -5)
                         UpdateColor()
                     end
-                end)
-                
-                -- Hue Slider interaction
-                local hueDragging = false
-                HueSlider.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        hueDragging = true
-                    end
-                end)
-                
-                UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        hueDragging = false
-                    end
-                end)
-                
-                UserInputService.InputChanged:Connect(function(input)
                     if hueDragging then
                         local pos = HueSlider.AbsolutePosition
                         local size = HueSlider.AbsoluteSize
@@ -2106,7 +2046,6 @@ function EnzoLib:CreateWindow(config)
                     end
                 end)
                 
-                -- Hex input
                 HexInput.FocusLost:Connect(function()
                     local hex = HexInput.Text:gsub("#", "")
                     if #hex == 6 then
@@ -2121,7 +2060,6 @@ function EnzoLib:CreateWindow(config)
                     end
                 end)
                 
-                -- Toggle picker
                 ColorPreview.MouseButton1Click:Connect(function()
                     PickerPanel.Visible = not PickerPanel.Visible
                 end)
@@ -2321,7 +2259,7 @@ function EnzoLib:CreateWindow(config)
                 
                 local Frame = Create("Frame", {
                     BackgroundColor3 = Colors.BackgroundLight,
-                    Size = UDim2.new(1, 0, 0, 38),
+                    Size = UDim2.new(1, 0, 0, 75),
                     LayoutOrder = order,
                     ClipsDescendants = false,
                     Parent = SectionContent
@@ -2330,8 +2268,8 @@ function EnzoLib:CreateWindow(config)
                 
                 Create("TextLabel", {
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 12, 0, 0),
-                    Size = UDim2.new(1, -24, 1, 0),
+                    Position = UDim2.new(0, 12, 0, 8),
+                    Size = UDim2.new(1, -24, 0, 20),
                     Font = Enum.Font.GothamMedium,
                     Text = cfg.Title or "Dropdown",
                     TextColor3 = Colors.Text,
@@ -2342,7 +2280,7 @@ function EnzoLib:CreateWindow(config)
                 
                 local DropBtn = Create("TextButton", {
                     BackgroundColor3 = Colors.Background,
-                    Position = UDim2.new(0, 10, 1, 5),
+                    Position = UDim2.new(0, 10, 0, 32),
                     Size = UDim2.new(1, -20, 0, 30),
                     Font = Enum.Font.Gotham,
                     Text = "",
@@ -2375,11 +2313,9 @@ function EnzoLib:CreateWindow(config)
                     Parent = DropBtn
                 })
                 
-                Frame.Size = UDim2.new(1, 0, 0, 75)
-                
                 local DropList = Create("Frame", {
                     BackgroundColor3 = Colors.Background,
-                    Position = UDim2.new(0, 10, 0, 78),
+                    Position = UDim2.new(0, 10, 0, 67),
                     Size = UDim2.new(1, -20, 0, 0),
                     ClipsDescendants = true,
                     Visible = false,
@@ -2389,7 +2325,6 @@ function EnzoLib:CreateWindow(config)
                 AddCorner(DropList, 6)
                 AddStroke(DropList, Colors.Border, 1)
                 
-                -- Select All / Clear All for multi
                 local ControlsFrame
                 if multi then
                     ControlsFrame = Create("Frame", {
@@ -2407,7 +2342,6 @@ function EnzoLib:CreateWindow(config)
                         Text = "Select All",
                         TextColor3 = Colors.Text,
                         TextSize = 9,
-                        AutoButtonColor = false,
                         ZIndex = 52,
                         Parent = ControlsFrame
                     })
@@ -2421,16 +2355,12 @@ function EnzoLib:CreateWindow(config)
                         Text = "Clear All",
                         TextColor3 = Colors.Text,
                         TextSize = 9,
-                        AutoButtonColor = false,
                         ZIndex = 52,
                         Parent = ControlsFrame
                     })
                     AddCorner(ClearAllBtn, 4)
                     
                     SelectAllBtn.MouseButton1Click:Connect(function()
-                        for item, _ in pairs(Dropdown.Value) do
-                            Dropdown.Value[item] = true
-                        end
                         for _, item in ipairs(Dropdown.Items) do
                             Dropdown.Value[item] = true
                         end
@@ -2561,7 +2491,6 @@ function EnzoLib:CreateWindow(config)
                     end
                 end
                 
-                -- Create initial items
                 for idx, item in ipairs(Dropdown.Items) do
                     itemBtns[item] = createItem(item, idx)
                     if multi then
@@ -2618,7 +2547,6 @@ function EnzoLib:CreateWindow(config)
                 return Dropdown
             end
             
-            -- ========== TEXTBOX (Legacy) ==========
             function Section:AddTextBox(cfg)
                 return Section:AddInput(cfg)
             end
@@ -2628,6 +2556,7 @@ function EnzoLib:CreateWindow(config)
         
         return Tab
     end
+    
     -- ============================================
     -- MOBILE BUTTON
     -- ============================================
