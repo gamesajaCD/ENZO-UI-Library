@@ -665,7 +665,7 @@ function EnzoLib:CreateWindow(config)
         Font = Enum.Font.Gotham,
         Text = subtitle,
         TextColor3 = Colors.TextMuted,
-        TextSize = 10,
+        TextSize = 13,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = Header
     })
