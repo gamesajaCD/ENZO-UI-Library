@@ -17,7 +17,7 @@
     ║  - Search in Dropdowns                                       ║
     ║  - Mobile Support                                            ║
     ║  - Notifications System                                      ║
-    ║  - Safe Re-execution    s                                     ║
+    ║  - Safe Re-execution                                         ║
     ╚══════════════════════════════════════════════════════════════╝
 ]]
 
@@ -2373,112 +2373,139 @@ function EnzoLib:CreateWindow(config)
         end))
     end
     
-    -- ============================================
-    -- MOBILE TOGGLE BUTTON
-    -- ============================================
-    local MobileBtn = Create("TextButton", {
-        Name = "MobileToggle",
-        BackgroundColor3 = CurrentTheme.Primary,
-        Position = UDim2.new(0, 15, 0.5, -25),
-        Size = UDim2.new(0, 50, 0, 50),
-        ZIndex = 999,
-        Font = Enum.Font.GothamBlack,
-        Text = "",
-        AutoButtonColor = false,
-        Parent = ScreenGui
-    })
-    AddCorner(MobileBtn, 25)
-    AddGradient(MobileBtn, CurrentTheme.Primary, CurrentTheme.Secondary, 135)
-    
-    local MobileGlow = AddGlow(MobileBtn, CurrentTheme.Primary, 12, 0.7)
-    table.insert(Window.ThemeObjects, {Object = MobileGlow, Property = "ImageColor3", Key = "Primary"})
-    
-    Create("TextLabel", {
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 1, 0),
-        ZIndex = 1000,
-        Font = Enum.Font.GothamBlack,
-        Text = "E",
-        TextColor3 = Colors.Text,
-        TextSize = 24,
-        Parent = MobileBtn
-    })
-    
-    -- Mobile draggable
-    local mobileDrag, mobileStart, mobileStartPos
-    MobileBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            mobileDrag = true
-            mobileStart = input.Position
-            mobileStartPos = MobileBtn.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    mobileDrag = false
-                end
-            end)
-        end
-    end)
-    
-    table.insert(Window.Connections, UserInputService.InputChanged:Connect(function(input)
-        if mobileDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - mobileStart
-            MobileBtn.Position = UDim2.new(
-                mobileStartPos.X.Scale, 
-                mobileStartPos.X.Offset + delta.X, 
-                mobileStartPos.Y.Scale, 
-                mobileStartPos.Y.Offset + delta.Y
-            )
-        end
-    end))
-    
-    MobileBtn.MouseButton1Click:Connect(function()
-        Window:Toggle()
-    end)
-    
-    MobileBtn.MouseEnter:Connect(function()
-        Tween(MobileBtn, {Size = UDim2.new(0, 55, 0, 55)}, 0.15)
-        Tween(MobileGlow, {ImageTransparency = 0.5}, 0.15)
-    end)
-    MobileBtn.MouseLeave:Connect(function()
-        Tween(MobileBtn, {Size = UDim2.new(0, 50, 0, 50)}, 0.15)
-        Tween(MobileGlow, {ImageTransparency = 0.7}, 0.15)
-    end)
-    
-    -- Update mobile button on toggle
-    local origToggle = Window.Toggle
-    Window.Toggle = function(self)
-        self.Visible = not self.Visible
+-- ============================================
+-- MOBILE TOGGLE BUTTON (FIXED POSITION)
+-- ============================================
+
+-- Simpan posisi terakhir (di luar function)
+local lastMobilePosition = UDim2.new(0, 15, 0.5, -25)
+local mobileHidden = false
+
+local MobileBtn = Create("TextButton", {
+    Name = "MobileToggle",
+    BackgroundColor3 = CurrentTheme.Primary,
+    Position = lastMobilePosition,
+    Size = UDim2.new(0, 50, 0, 50),
+    ZIndex = 999,
+    Font = Enum.Font.GothamBlack,
+    Text = "",
+    AutoButtonColor = false,
+    Parent = ScreenGui
+})
+AddCorner(MobileBtn, 25)
+AddGradient(MobileBtn, CurrentTheme.Primary, CurrentTheme.Secondary, 135)
+
+local MobileGlow = AddGlow(MobileBtn, CurrentTheme.Primary, 12, 0.7)
+table.insert(Window.ThemeObjects, {Object = MobileGlow, Property = "ImageColor3", Key = "Primary"})
+
+-- Logo Image (bisa diganti dengan gambar custom)
+local MobileLogo = Create("ImageLabel", {
+    Name = "Logo",
+    BackgroundTransparency = 1,
+    Size = UDim2.new(0.7, 0, 0.7, 0),
+    Position = UDim2.new(0.15, 0, 0.15, 0),
+    ZIndex = 1000,
+    Image = "rbxassetid://YOUR_IMAGE_ID", -- GANTI DENGAN ID GAMBAR KAMU
+    ImageColor3 = Color3.fromRGB(255, 255, 255),
+    ScaleType = Enum.ScaleType.Fit,
+    Parent = MobileBtn
+})
+
+-- Atau pakai Text jika tidak ada gambar
+-- Comment ImageLabel di atas dan uncomment ini:
+--[[
+Create("TextLabel", {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 1, 0),
+    ZIndex = 1000,
+    Font = Enum.Font.GothamBlack,
+    Text = "E",
+    TextColor3 = Colors.Text,
+    TextSize = 24,
+    Parent = MobileBtn
+})
+]]
+
+-- Mobile draggable (FIXED - Simpan posisi terakhir)
+local mobileDrag = false
+local mobileStart, mobileStartPos
+
+MobileBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        mobileDrag = true
+        mobileStart = input.Position
+        mobileStartPos = MobileBtn.Position
         
-        if self.Visible then
-            Main.Visible = true
-            Main.Size = UDim2.new(0, size.X.Offset, 0, 0)
-            Main.BackgroundTransparency = 1
-            
-            Tween(Main, {Size = size, BackgroundTransparency = 1 - (currentOpacity * 0.95)}, 0.5, Enum.EasingStyle.Back)
-            Tween(Blur, {Size = 15}, 0.3)
-            Tween(MainGlow, {ImageTransparency = 0.85}, 0.3)
-            Tween(MobileBtn, {Position = UDim2.new(0, -60, 0.5, -25)}, 0.3)
-        else
-            Tween(Main, {Size = UDim2.new(0, size.X.Offset, 0, 0), BackgroundTransparency = 1}, 0.3)
-            Tween(Blur, {Size = 0}, 0.3)
-            Tween(MainGlow, {ImageTransparency = 1}, 0.3)
-            Tween(MobileBtn, {Position = UDim2.new(0, 15, 0.5, -25)}, 0.3)
-            
-            task.delay(0.3, function()
-                if not self.Visible then 
-                    Main.Visible = false 
-                end
-            end)
-        end
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                mobileDrag = false
+                -- SIMPAN POSISI TERAKHIR SAAT SELESAI DRAG
+                lastMobilePosition = MobileBtn.Position
+            end
+        end)
     end
-    
-    -- Store in global
-    if getgenv then
-        getgenv().EnzoUILib = Window
+end)
+
+table.insert(Window.Connections, UserInputService.InputChanged:Connect(function(input)
+    if mobileDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - mobileStart
+        MobileBtn.Position = UDim2.new(
+            mobileStartPos.X.Scale, 
+            mobileStartPos.X.Offset + delta.X, 
+            mobileStartPos.Y.Scale, 
+            mobileStartPos.Y.Offset + delta.Y
+        )
     end
+end))
+
+MobileBtn.MouseButton1Click:Connect(function()
+    Window:Toggle()
+end)
+
+MobileBtn.MouseEnter:Connect(function()
+    Tween(MobileBtn, {Size = UDim2.new(0, 55, 0, 55)}, 0.15)
+    Tween(MobileGlow, {ImageTransparency = 0.5}, 0.15)
+end)
+MobileBtn.MouseLeave:Connect(function()
+    Tween(MobileBtn, {Size = UDim2.new(0, 50, 0, 50)}, 0.15)
+    Tween(MobileGlow, {ImageTransparency = 0.7}, 0.15)
+end)
+
+-- FIXED Toggle function - Tidak reset posisi MobileBtn
+Window.Toggle = function(self)
+    self.Visible = not self.Visible
     
-    return Window
+    if self.Visible then
+        Main.Visible = true
+        Main.Size = UDim2.new(0, size.X.Offset, 0, 0)
+        Main.BackgroundTransparency = 1
+        
+        Tween(Main, {Size = size, BackgroundTransparency = 1 - (currentOpacity * 0.95)}, 0.5, Enum.EasingStyle.Back)
+        Tween(Blur, {Size = 15}, 0.3)
+        Tween(MainGlow, {ImageTransparency = 0.85}, 0.3)
+        
+        -- Sembunyikan mobile button dengan fade, TAPI JANGAN UBAH POSISI
+        Tween(MobileBtn, {BackgroundTransparency = 1}, 0.3)
+        Tween(MobileLogo, {ImageTransparency = 1}, 0.3)
+        Tween(MobileGlow, {ImageTransparency = 1}, 0.3)
+        mobileHidden = true
+    else
+        Tween(Main, {Size = UDim2.new(0, size.X.Offset, 0, 0), BackgroundTransparency = 1}, 0.3)
+        Tween(Blur, {Size = 0}, 0.3)
+        Tween(MainGlow, {ImageTransparency = 1}, 0.3)
+        
+        -- Tampilkan kembali mobile button di POSISI TERAKHIR
+        Tween(MobileBtn, {BackgroundTransparency = 0}, 0.3)
+        Tween(MobileLogo, {ImageTransparency = 0}, 0.3)
+        Tween(MobileGlow, {ImageTransparency = 0.7}, 0.3)
+        mobileHidden = false
+        
+        task.delay(0.3, function()
+            if not self.Visible then 
+                Main.Visible = false 
+            end
+        end)
+    end
 end
 
 <<<<<<< HEAD
