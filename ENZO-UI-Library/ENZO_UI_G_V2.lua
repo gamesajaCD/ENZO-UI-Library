@@ -651,7 +651,7 @@ function EnzoLib:CreateWindow(config)
         Font = Enum.Font.GothamBlack,
         Text = title,
         TextColor3 = Colors.Text,
-        TextSize = 16,
+        TextSize = 5,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextTruncate = Enum.TextTruncate.AtEnd,
         Parent = Header
@@ -677,7 +677,7 @@ function EnzoLib:CreateWindow(config)
         BackgroundColor3 = Colors.BackgroundLight,
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 0),
-        Size = UDim2.new(0, 280, 0, 500),
+        Size = UDim2.new(0, 280, 0, 30),
         ZIndex = 11,
         Parent = Header
     })
