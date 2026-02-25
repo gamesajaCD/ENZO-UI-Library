@@ -1,22 +1,31 @@
 --[[
-    ENZO UI LIBRARY - Design F: Fusion Modern
-    Version: 1.0.0
-    Author: ENZO-YT
-    
-    Style: Cyberpunk + Glassmorphism + Gradient
-    Inspired by: Fluent, Rayfield, Aurora
-    
-    Features:
-    - Multiple Color Themes
-    - Heavy Glass Effect
-    - Neon Glow Accents
-    - Smooth Animations
-    - Sidebar + Header Layout
+    ╔══════════════════════════════════════════════════════════════╗
+    ║                    ENZO UI LIBRARY                           ║
+    ║              Design F: Fusion Modern                         ║
+    ║                   Version: 1.0.0                             ║
+    ║                  Author: ENZO-YT                             ║
+    ╠══════════════════════════════════════════════════════════════╣
+    ║  Style: Cyberpunk + Glassmorphism + Gradient                 ║
+    ║  Inspired by: Fluent, Rayfield, Aurora                       ║
+    ║                                                              ║
+    ║  Features:                                                   ║
+    ║  - Multiple Color Themes (6 themes)                          ║
+    ║  - Heavy Glass Effect with Blur                              ║
+    ║  - Neon Glow Accents                                         ║
+    ║  - Smooth Animations                                         ║
+    ║  - Sidebar + Header Layout                                   ║
+    ║  - Search in Dropdowns                                       ║
+    ║  - Mobile Support                                            ║
+    ║  - Notifications System                                      ║
+    ║  - Safe Re-execution    s                                     ║
+    ╚══════════════════════════════════════════════════════════════╝
 ]]
 
 local EnzoLib = {}
 
--- Services
+-- ============================================
+-- SERVICES
+-- ============================================
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -25,13 +34,30 @@ local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Cleanup
-if getgenv().EnzoUILib then
-    pcall(function() getgenv().EnzoUILib:Destroy() end)
+-- ============================================
+-- SAFE CLEANUP (Re-execution Support)
+-- ============================================
+if getgenv then
+    if getgenv().EnzoUILib then
+        pcall(function() 
+            getgenv().EnzoUILib:Destroy() 
+        end)
+    end
 end
+
 pcall(function()
     for _, v in pairs(Lighting:GetChildren()) do
-        if v.Name:find("Enzo") then v:Destroy() end
+        if v.Name:find("Enzo") then 
+            v:Destroy() 
+        end
+    end
+end)
+
+pcall(function()
+    for _, v in pairs(CoreGui:GetChildren()) do
+        if v.Name:find("EnzoUI") then 
+            v:Destroy() 
+        end
     end
 end)
 
@@ -85,7 +111,9 @@ local Themes = {
 
 local CurrentTheme = Themes.Neon
 
--- Base Colors (Theme Independent)
+-- ============================================
+-- BASE COLORS (Theme Independent)
+-- ============================================
 local Colors = {
     Background = Color3.fromRGB(8, 8, 12),
     BackgroundDark = Color3.fromRGB(5, 5, 8),
@@ -106,58 +134,72 @@ local Colors = {
     Info = Color3.fromRGB(70, 180, 255),
 }
 
--- Utilities
+-- ============================================
+-- UTILITY FUNCTIONS
+-- ============================================
 local function Create(class, props)
     local inst = Instance.new(class)
     for k, v in pairs(props or {}) do
-        if k ~= "Parent" then inst[k] = v end
+        if k ~= "Parent" then 
+            inst[k] = v 
+        end
     end
-    if props and props.Parent then inst.Parent = props.Parent end
+    if props and props.Parent then 
+        inst.Parent = props.Parent 
+    end
     return inst
 end
 
 local function Tween(obj, props, dur, style, dir)
-    local t = TweenService:Create(obj, TweenInfo.new(dur or 0.3, style or Enum.EasingStyle.Quint, dir or Enum.EasingDirection.Out), props)
-    t:Play()
-    return t
+    local tweenInfo = TweenInfo.new(
+        dur or 0.3, 
+        style or Enum.EasingStyle.Quint, 
+        dir or Enum.EasingDirection.Out
+    )
+    local tween = TweenService:Create(obj, tweenInfo, props)
+    tween:Play()
+    return tween
 end
 
-local function AddCorner(p, r)
-    return Create("UICorner", {CornerRadius = UDim.new(0, r or 8), Parent = p})
+local function AddCorner(parent, radius)
+    return Create("UICorner", {
+        CornerRadius = UDim.new(0, radius or 8), 
+        Parent = parent
+    })
 end
 
-local function AddPadding(p, t, b, l, r)
+local function AddPadding(parent, top, bottom, left, right)
     return Create("UIPadding", {
-        PaddingTop = UDim.new(0, t or 0),
-        PaddingBottom = UDim.new(0, b or t or 0),
-        PaddingLeft = UDim.new(0, l or t or 0),
-        PaddingRight = UDim.new(0, r or l or t or 0),
-        Parent = p
+        PaddingTop = UDim.new(0, top or 0),
+        PaddingBottom = UDim.new(0, bottom or top or 0),
+        PaddingLeft = UDim.new(0, left or top or 0),
+        PaddingRight = UDim.new(0, right or left or top or 0),
+        Parent = parent
     })
 end
 
-local function AddStroke(p, col, thick, trans)
+local function AddStroke(parent, color, thickness, transparency)
     return Create("UIStroke", {
-        Color = col or Color3.fromRGB(255, 255, 255),
-        Thickness = thick or 1,
-        Transparency = trans or 0.8,
+        Color = color or Color3.fromRGB(255, 255, 255),
+        Thickness = thickness or 1,
+        Transparency = transparency or 0.8,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-        Parent = p
+        Parent = parent
     })
 end
 
-local function AddGradient(p, c1, c2, rot)
+local function AddGradient(parent, color1, color2, rotation)
     return Create("UIGradient", {
         Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, c1),
-            ColorSequenceKeypoint.new(1, c2)
+            ColorSequenceKeypoint.new(0, color1),
+            ColorSequenceKeypoint.new(1, color2)
         }),
-        Rotation = rot or 45,
-        Parent = p
+        Rotation = rotation or 45,
+        Parent = parent
     })
 end
 
-local function AddGlow(parent, color, size, trans)
+local function AddGlow(parent, color, size, transparency)
     return Create("ImageLabel", {
         Name = "Glow",
         BackgroundTransparency = 1,
@@ -166,7 +208,7 @@ local function AddGlow(parent, color, size, trans)
         ZIndex = -1,
         Image = "rbxassetid://6015897843",
         ImageColor3 = color,
-        ImageTransparency = trans or 0.8,
+        ImageTransparency = transparency or 0.8,
         ScaleType = Enum.ScaleType.Slice,
         SliceCenter = Rect.new(49, 49, 450, 450),
         Parent = parent
@@ -174,30 +216,38 @@ local function AddGlow(parent, color, size, trans)
 end
 
 local function MakeDraggable(frame, handle)
-    local drag, start, startPos
+    local dragging, dragStart, startPos
     handle = handle or frame
     
     handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            drag = true
-            start = input.Position
+            dragging = true
+            dragStart = input.Position
             startPos = frame.Position
+            
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then drag = false end
+                if input.UserInputState == Enum.UserInputState.End then 
+                    dragging = false 
+                end
             end)
         end
     end)
     
     UserInputService.InputChanged:Connect(function(input)
-        if drag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - start
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale, 
+                startPos.X.Offset + delta.X, 
+                startPos.Y.Scale, 
+                startPos.Y.Offset + delta.Y
+            )
         end
     end)
 end
 
 -- ============================================
--- MAIN LIBRARY
+-- MAIN LIBRARY - CREATE WINDOW
 -- ============================================
 function EnzoLib:CreateWindow(config)
     config = config or {}
@@ -211,28 +261,41 @@ function EnzoLib:CreateWindow(config)
         CurrentTheme = Themes[config.Theme]
     end
     
+    -- Window Object
     local Window = {
         Tabs = {},
         CurrentTab = nil,
         Visible = true,
         ToggleKey = config.ToggleKey or Enum.KeyCode.RightControl,
         Theme = CurrentTheme,
-        ThemeObjects = {} -- Store objects that need theme updates
+        ThemeObjects = {},
+        Connections = {},
+        Threads = {}
     }
     
-    -- ScreenGui
+    -- ============================================
+    -- SCREENGUI
+    -- ============================================
     local ScreenGui = Create("ScreenGui", {
         Name = "EnzoUI_F_" .. math.random(100000, 999999),
         ResetOnSpawn = false,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         IgnoreGuiInset = true
     })
-    pcall(function() ScreenGui.Parent = CoreGui end)
-    if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+    
+    pcall(function() 
+        ScreenGui.Parent = CoreGui 
+    end)
+    
+    if not ScreenGui.Parent then 
+        ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") 
+    end
     
     Window.ScreenGui = ScreenGui
     
-    -- Blur
+    -- ============================================
+    -- BLUR EFFECT
+    -- ============================================
     local Blur = Create("BlurEffect", {
         Name = "EnzoBlur",
         Size = config.Blur ~= false and 15 or 0,
@@ -254,11 +317,11 @@ function EnzoLib:CreateWindow(config)
     
     Window.Main = Main
     
-    -- Main Border Glow (Theme colored)
+    -- Main Border Glow
     local MainGlow = AddGlow(Main, CurrentTheme.Primary, 25, 0.85)
     table.insert(Window.ThemeObjects, {Object = MainGlow, Property = "ImageColor3", Key = "Primary"})
     
-    -- Main Border
+    -- Main Border Stroke
     local MainBorder = AddStroke(Main, CurrentTheme.Primary, 1.5, 0.7)
     table.insert(Window.ThemeObjects, {Object = MainBorder, Property = "Color", Key = "Primary"})
     
@@ -287,7 +350,7 @@ function EnzoLib:CreateWindow(config)
     })
     AddCorner(Sidebar, 12)
     
-    -- Fix right corners
+    -- Fix right corners of sidebar
     Create("Frame", {
         BackgroundColor3 = Colors.BackgroundDark,
         BackgroundTransparency = 0.3,
@@ -309,7 +372,7 @@ function EnzoLib:CreateWindow(config)
     AddGradient(SidebarLine, CurrentTheme.Primary, CurrentTheme.Secondary, 90)
     table.insert(Window.ThemeObjects, {Object = SidebarLine, Property = "BackgroundColor3", Key = "Primary"})
     
-    -- Logo
+    -- Logo Container
     local LogoContainer = Create("Frame", {
         BackgroundColor3 = Colors.Glass,
         BackgroundTransparency = 0.5,
@@ -319,8 +382,8 @@ function EnzoLib:CreateWindow(config)
         Parent = Sidebar
     })
     AddCorner(LogoContainer, 14)
-    AddStroke(LogoContainer, CurrentTheme.Primary, 2, 0.5)
-    table.insert(Window.ThemeObjects, {Object = LogoContainer:FindFirstChildOfClass("UIStroke"), Property = "Color", Key = "Primary"})
+    local LogoStroke = AddStroke(LogoContainer, CurrentTheme.Primary, 2, 0.5)
+    table.insert(Window.ThemeObjects, {Object = LogoStroke, Property = "Color", Key = "Primary"})
     
     local LogoGlow = AddGlow(LogoContainer, CurrentTheme.Primary, 15, 0.7)
     table.insert(Window.ThemeObjects, {Object = LogoGlow, Property = "ImageColor3", Key = "Primary"})
@@ -346,7 +409,7 @@ function EnzoLib:CreateWindow(config)
     })
     
     -- Sidebar Divider
-    local SidebarDivider = Create("Frame", {
+    Create("Frame", {
         BackgroundColor3 = Colors.GlassBorder,
         BackgroundTransparency = 0.5,
         Position = UDim2.new(0.15, 0, 0, 75),
@@ -435,7 +498,7 @@ function EnzoLib:CreateWindow(config)
         Parent = Header
     })
     
-    -- Tab Icon
+    -- Tab Icon Background
     local TabIconBG = Create("Frame", {
         BackgroundColor3 = CurrentTheme.Primary,
         BackgroundTransparency = 0.85,
@@ -459,7 +522,7 @@ function EnzoLib:CreateWindow(config)
     })
     table.insert(Window.ThemeObjects, {Object = TabIcon, Property = "TextColor3", Key = "Primary"})
     
-    -- Title
+    -- Title Labels
     local TabTitle = Create("TextLabel", {
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 46, 0, 12),
@@ -486,7 +549,9 @@ function EnzoLib:CreateWindow(config)
         Parent = TitleContainer
     })
     
-    -- Window Controls
+    -- ============================================
+    -- WINDOW CONTROLS
+    -- ============================================
     local Controls = Create("Frame", {
         BackgroundColor3 = Colors.BackgroundDark,
         BackgroundTransparency = 0.5,
@@ -520,13 +585,21 @@ function EnzoLib:CreateWindow(config)
             Tween(btn, {BackgroundTransparency = 0.9, TextSize = 14}, 0.15)
         end)
         btn.MouseButton1Click:Connect(callback)
+        
         return btn
     end
     
-    CreateControl("−", Colors.Warning, UDim2.new(0, 6, 0.5, -12), function() Window:Toggle() end)
-    CreateControl("□", Colors.Info, UDim2.new(0, 44, 0.5, -12), function() end)
-    CreateControl("×", Colors.Error, UDim2.new(0, 82, 0.5, -12), function() Window:Destroy() end)
+    CreateControl("−", Colors.Warning, UDim2.new(0, 6, 0.5, -12), function() 
+        Window:Toggle() 
+    end)
+    CreateControl("□", Colors.Info, UDim2.new(0, 44, 0.5, -12), function() 
+        -- Maximize placeholder
+    end)
+    CreateControl("×", Colors.Error, UDim2.new(0, 82, 0.5, -12), function() 
+        Window:Destroy() 
+    end)
     
+    -- Make window draggable by header
     MakeDraggable(Main, Header)
     
     -- ============================================
@@ -565,7 +638,7 @@ function EnzoLib:CreateWindow(config)
     AddGradient(FooterLine, CurrentTheme.Primary, CurrentTheme.Secondary, 0)
     table.insert(Window.ThemeObjects, {Object = FooterLine, Property = "BackgroundColor3", Key = "Primary"})
     
-    -- Opacity Control
+    -- Opacity Label
     Create("TextLabel", {
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 15, 0.5, -8),
@@ -579,6 +652,7 @@ function EnzoLib:CreateWindow(config)
         Parent = Footer
     })
     
+    -- Opacity Track
     local OpacityTrack = Create("Frame", {
         BackgroundColor3 = Colors.BackgroundDark,
         Position = UDim2.new(0, 75, 0.5, -5),
@@ -622,7 +696,42 @@ function EnzoLib:CreateWindow(config)
     })
     table.insert(Window.ThemeObjects, {Object = OpacityValue, Property = "TextColor3", Key = "Primary"})
     
-    -- Theme Selector
+    -- Opacity Slider Logic
+    local opacityDragging = false
+    local currentOpacity = 1
+    
+    local function UpdateOpacity(input)
+        local pos = math.clamp((input.Position.X - OpacityTrack.AbsolutePosition.X) / OpacityTrack.AbsoluteSize.X, 0, 1)
+        currentOpacity = pos
+        
+        OpacityFill.Size = UDim2.new(pos, 0, 1, 0)
+        OpacityKnob.Position = UDim2.new(pos, -8, 0.5, -8)
+        OpacityValue.Text = math.floor(pos * 100) .. "%"
+        
+        -- Apply transparency to main frame
+        Main.BackgroundTransparency = 1 - (pos * 0.95)
+    end
+    
+    OpacityTrack.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            opacityDragging = true
+            UpdateOpacity(input)
+        end
+    end)
+    
+    OpacityTrack.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            opacityDragging = false
+        end
+    end)
+    
+    table.insert(Window.Connections, UserInputService.InputChanged:Connect(function(input)
+        if opacityDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            UpdateOpacity(input)
+        end
+    end))
+    
+    -- Theme Label
     Create("TextLabel", {
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 230, 0.5, -8),
@@ -636,6 +745,7 @@ function EnzoLib:CreateWindow(config)
         Parent = Footer
     })
     
+    -- Theme Selector
     local ThemeSelector = Create("Frame", {
         BackgroundColor3 = Colors.BackgroundDark,
         Position = UDim2.new(0, 280, 0.5, -10),
@@ -692,7 +802,7 @@ function EnzoLib:CreateWindow(config)
     })
     AddCorner(ToggleBadge, 6)
     
-    Create("TextLabel", {
+    local ToggleBadgeText = Create("TextLabel", {
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
         ZIndex = 12,
@@ -703,43 +813,63 @@ function EnzoLib:CreateWindow(config)
         Parent = ToggleBadge
     })
     
-    -- Toggle Handler
-    UserInputService.InputBegan:Connect(function(input, processed)
+    -- Toggle Key Handler
+    table.insert(Window.Connections, UserInputService.InputBegan:Connect(function(input, processed)
         if not processed and input.KeyCode == Window.ToggleKey then
             Window:Toggle()
         end
-    end)
+    end))
     
     -- ============================================
     -- WINDOW METHODS
     -- ============================================
     function Window:Toggle()
         self.Visible = not self.Visible
+        
         if self.Visible then
             Main.Visible = true
             Main.Size = UDim2.new(0, size.X.Offset, 0, 0)
             Main.BackgroundTransparency = 1
-            Tween(Main, {Size = size, BackgroundTransparency = 0.05}, 0.5, Enum.EasingStyle.Back)
+            
+            Tween(Main, {Size = size, BackgroundTransparency = 1 - (currentOpacity * 0.95)}, 0.5, Enum.EasingStyle.Back)
             Tween(Blur, {Size = 15}, 0.3)
             Tween(MainGlow, {ImageTransparency = 0.85}, 0.3)
         else
             Tween(Main, {Size = UDim2.new(0, size.X.Offset, 0, 0), BackgroundTransparency = 1}, 0.3)
             Tween(Blur, {Size = 0}, 0.3)
             Tween(MainGlow, {ImageTransparency = 1}, 0.3)
+            
             task.delay(0.3, function()
-                if not self.Visible then Main.Visible = false end
+                if not self.Visible then 
+                    Main.Visible = false 
+                end
             end)
         end
     end
     
     function Window:Destroy()
+        -- Disconnect all connections
+        for _, connection in pairs(self.Connections) do
+            pcall(function() connection:Disconnect() end)
+        end
+        
+        -- Cancel all threads
+        for _, thread in pairs(self.Threads) do
+            pcall(function() task.cancel(thread) end)
+        end
+        
+        -- Animate and destroy
         Tween(Main, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}, 0.4)
         Tween(Blur, {Size = 0}, 0.3)
+        
         task.delay(0.4, function()
-            ScreenGui:Destroy()
-            Blur:Destroy()
+            pcall(function() ScreenGui:Destroy() end)
+            pcall(function() Blur:Destroy() end)
         end)
-        getgenv().EnzoUILib = nil
+        
+        if getgenv then
+            getgenv().EnzoUILib = nil
+        end
     end
     
     function Window:SetTheme(themeName)
@@ -755,18 +885,6 @@ function EnzoLib:CreateWindow(config)
                     end)
                 end
             end
-            
-            -- Update gradients (special handling)
-            for _, obj in pairs(Window.ThemeObjects) do
-                if obj.Gradient then
-                    pcall(function()
-                        obj.Gradient.Color = ColorSequence.new({
-                            ColorSequenceKeypoint.new(0, CurrentTheme.Primary),
-                            ColorSequenceKeypoint.new(1, CurrentTheme.Secondary)
-                        })
-                    end)
-                end
-            end
         end
     end
     
@@ -775,6 +893,7 @@ function EnzoLib:CreateWindow(config)
             Window.CurrentTab.Content.Visible = false
             Tween(Window.CurrentTab.Button, {BackgroundTransparency = 1}, 0.2)
             Tween(Window.CurrentTab.IconLabel, {TextColor3 = Colors.TextMuted}, 0.2)
+            
             if Window.CurrentTab.Indicator then
                 Tween(Window.CurrentTab.Indicator, {Size = UDim2.new(0, 3, 0, 0)}, 0.2)
             end
@@ -790,6 +909,7 @@ function EnzoLib:CreateWindow(config)
         
         Tween(tab.Button, {BackgroundTransparency = 0.7}, 0.2)
         Tween(tab.IconLabel, {TextColor3 = CurrentTheme.Primary}, 0.2)
+        
         if tab.Indicator then
             Tween(tab.Indicator, {Size = UDim2.new(0, 3, 0.6, 0)}, 0.2, Enum.EasingStyle.Back)
         end
@@ -799,7 +919,7 @@ function EnzoLib:CreateWindow(config)
     end
     
     -- ============================================
-    -- ADD TAB
+    -- ADD TAB METHOD
     -- ============================================
     function Window:AddTab(config)
         config = config or {}
@@ -865,7 +985,7 @@ function EnzoLib:CreateWindow(config)
         AddCorner(Tooltip, 6)
         AddStroke(Tooltip, CurrentTheme.Primary, 1, 0.5)
         
-        local TooltipText = Create("TextLabel", {
+        Create("TextLabel", {
             BackgroundTransparency = 1,
             Position = UDim2.new(0, 10, 0, 0),
             Size = UDim2.new(0, 80, 1, 0),
@@ -910,6 +1030,7 @@ function EnzoLib:CreateWindow(config)
         TabButton.MouseEnter:Connect(function()
             Tooltip.Visible = true
             Tween(Tooltip, {Size = UDim2.new(0, 100, 0, 28)}, 0.2, Enum.EasingStyle.Back)
+            
             if Window.CurrentTab ~= Tab then
                 Tween(TabButton, {BackgroundTransparency = 0.8}, 0.15)
                 Tween(TabIconLabel, {TextColor3 = Colors.TextSecondary}, 0.15)
@@ -918,7 +1039,10 @@ function EnzoLib:CreateWindow(config)
         
         TabButton.MouseLeave:Connect(function()
             Tween(Tooltip, {Size = UDim2.new(0, 0, 0, 28)}, 0.15)
-            task.delay(0.15, function() Tooltip.Visible = false end)
+            task.delay(0.15, function() 
+                Tooltip.Visible = false 
+            end)
+            
             if Window.CurrentTab ~= Tab then
                 Tween(TabButton, {BackgroundTransparency = 1}, 0.15)
                 Tween(TabIconLabel, {TextColor3 = Colors.TextMuted}, 0.15)
@@ -930,10 +1054,13 @@ function EnzoLib:CreateWindow(config)
         end)
         
         table.insert(Window.Tabs, Tab)
-        if #Window.Tabs == 1 then Window:SelectTab(Tab) end
+        
+        if #Window.Tabs == 1 then 
+            Window:SelectTab(Tab) 
+        end
         
         -- ============================================
-        -- ADD SECTION
+        -- ADD SECTION METHOD
         -- ============================================
         function Tab:AddSection(config)
             config = config or {}
@@ -946,7 +1073,7 @@ function EnzoLib:CreateWindow(config)
                 Elements = {}
             }
             
-            -- Column
+            -- Get or Create Column
             local colName = sectionSide .. "Column"
             local column = TabContent:FindFirstChild(colName)
             
@@ -959,10 +1086,13 @@ function EnzoLib:CreateWindow(config)
                     LayoutOrder = sectionSide == "Left" and 1 or 2,
                     Parent = TabContent
                 })
-                Create("UIListLayout", {Padding = UDim.new(0, 12), Parent = column})
+                Create("UIListLayout", {
+                    Padding = UDim.new(0, 12), 
+                    Parent = column
+                })
             end
             
-            -- Section Card (Glass Style)
+            -- Section Card
             local SectionCard = Create("Frame", {
                 BackgroundColor3 = Colors.Glass,
                 BackgroundTransparency = 0.5,
@@ -1002,6 +1132,7 @@ function EnzoLib:CreateWindow(config)
             })
             table.insert(Window.ThemeObjects, {Object = SectionIconLabel, Property = "TextColor3", Key = "Primary"})
             
+            -- Section Title
             Create("TextLabel", {
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0, 52, 0, 0),
@@ -1024,7 +1155,7 @@ function EnzoLib:CreateWindow(config)
             AddGradient(Divider, CurrentTheme.Primary, Color3.fromRGB(50, 50, 70), 0)
             table.insert(Window.ThemeObjects, {Object = Divider, Property = "BackgroundColor3", Key = "Primary"})
             
-            -- Content
+            -- Section Content
             local SectionContent = Create("Frame", {
                 BackgroundTransparency = 1,
                 Position = UDim2.new(0, 0, 0, 50),
@@ -1033,7 +1164,10 @@ function EnzoLib:CreateWindow(config)
                 Parent = SectionCard
             })
             AddPadding(SectionContent, 5, 14, 12, 12)
-            Create("UIListLayout", {Padding = UDim.new(0, 8), Parent = SectionContent})
+            Create("UIListLayout", {
+                Padding = UDim.new(0, 8), 
+                Parent = SectionContent
+            })
             
             Section.Card = SectionCard
             Section.Content = SectionContent
@@ -1109,6 +1243,7 @@ function EnzoLib:CreateWindow(config)
                 
                 ClickArea.MouseButton1Click:Connect(function()
                     Toggle.Value = not Toggle.Value
+                    
                     if Toggle.Value then
                         Tween(Switch, {BackgroundColor3 = Colors.Success}, 0.25)
                         Tween(Knob, {Position = UDim2.new(1, -24, 0.5, -11)}, 0.25, Enum.EasingStyle.Back)
@@ -1118,23 +1253,30 @@ function EnzoLib:CreateWindow(config)
                         Tween(Knob, {Position = UDim2.new(0, 2, 0.5, -11)}, 0.25, Enum.EasingStyle.Back)
                         Tween(SwitchGlow, {ImageTransparency = 1}, 0.25)
                     end
-                    if cfg.Callback then cfg.Callback(Toggle.Value) end
+                    
+                    if cfg.Callback then 
+                        cfg.Callback(Toggle.Value) 
+                    end
                 end)
                 
-                Frame.MouseEnter:Connect(function() Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) end)
-                Frame.MouseLeave:Connect(function() Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) end)
+                Frame.MouseEnter:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) 
+                end)
+                Frame.MouseLeave:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) 
+                end)
                 
                 function Toggle:SetValue(v)
                     if Toggle.Value ~= v then
                         Toggle.Value = v
                         if v then
-                            Tween(Switch, {BackgroundColor3 = Colors.Success})
-                            Tween(Knob, {Position = UDim2.new(1, -24, 0.5, -11)})
-                            Tween(SwitchGlow, {ImageTransparency = 0.7, ImageColor3 = Colors.Success})
+                            Tween(Switch, {BackgroundColor3 = Colors.Success}, 0.2)
+                            Tween(Knob, {Position = UDim2.new(1, -24, 0.5, -11)}, 0.2)
+                            Tween(SwitchGlow, {ImageTransparency = 0.7, ImageColor3 = Colors.Success}, 0.2)
                         else
-                            Tween(Switch, {BackgroundColor3 = Colors.BackgroundDark})
-                            Tween(Knob, {Position = UDim2.new(0, 2, 0.5, -11)})
-                            Tween(SwitchGlow, {ImageTransparency = 1})
+                            Tween(Switch, {BackgroundColor3 = Colors.BackgroundDark}, 0.2)
+                            Tween(Knob, {Position = UDim2.new(0, 2, 0.5, -11)}, 0.2)
+                            Tween(SwitchGlow, {ImageTransparency = 1}, 0.2)
                         end
                     end
                 end
@@ -1263,7 +1405,10 @@ function EnzoLib:CreateWindow(config)
                     FillGlow.Size = UDim2.new(pos, 0, 1, 6)
                     SliderKnob.Position = UDim2.new(pos, -10, 0.5, -10)
                     ValueLabel.Text = tostring(val) .. (cfg.Suffix or "")
-                    if cfg.Callback then cfg.Callback(val) end
+                    
+                    if cfg.Callback then 
+                        cfg.Callback(val) 
+                    end
                 end
                 
                 Track.InputBegan:Connect(function(input)
@@ -1279,14 +1424,18 @@ function EnzoLib:CreateWindow(config)
                     end
                 end)
                 
-                UserInputService.InputChanged:Connect(function(input)
+                table.insert(Window.Connections, UserInputService.InputChanged:Connect(function(input)
                     if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                         update(input)
                     end
-                end)
+                end))
                 
-                Frame.MouseEnter:Connect(function() Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) end)
-                Frame.MouseLeave:Connect(function() Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) end)
+                Frame.MouseEnter:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) 
+                end)
+                Frame.MouseLeave:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) 
+                end)
                 
                 function Slider:SetValue(v)
                     local pos = (v - min) / (max - min)
@@ -1379,17 +1528,24 @@ function EnzoLib:CreateWindow(config)
                     task.delay(0.08, function()
                         Tween(Btn, {Size = UDim2.new(1, -24, 0, cfg.Description and 26 or 30)}, 0.08)
                     end)
-                    if cfg.Callback then cfg.Callback() end
+                    
+                    if cfg.Callback then 
+                        cfg.Callback() 
+                    end
                 end)
                 
-                Frame.MouseEnter:Connect(function() Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) end)
-                Frame.MouseLeave:Connect(function() Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) end)
+                Frame.MouseEnter:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) 
+                end)
+                Frame.MouseLeave:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) 
+                end)
                 
                 return {}
             end
             
             -- ============================================
-            -- DROPDOWN
+            -- DROPDOWN (WITH SEARCH)
             -- ============================================
             function Section:AddDropdown(cfg)
                 cfg = cfg or {}
@@ -1402,7 +1558,9 @@ function EnzoLib:CreateWindow(config)
                 }
                 
                 if multi and cfg.Default then
-                    for _, v in pairs(cfg.Default) do Dropdown.Value[v] = true end
+                    for _, v in pairs(cfg.Default) do 
+                        Dropdown.Value[v] = true 
+                    end
                 end
                 
                 local baseH = cfg.Description and 75 or 60
@@ -1478,7 +1636,7 @@ function EnzoLib:CreateWindow(config)
                 })
                 table.insert(Window.ThemeObjects, {Object = Arrow, Property = "TextColor3", Key = "Primary"})
                 
-                -- Content
+                -- Dropdown Content
                 local Content = Create("Frame", {
                     BackgroundColor3 = Colors.Glass,
                     Position = UDim2.new(0, 12, 0, baseH + 4),
@@ -1489,7 +1647,7 @@ function EnzoLib:CreateWindow(config)
                 AddCorner(Content, 8)
                 AddStroke(Content, CurrentTheme.Primary, 1, 0.7)
                 
-                -- Search
+                -- Search Box
                 local SearchBox = Create("TextBox", {
                     BackgroundColor3 = Colors.BackgroundDark,
                     Position = UDim2.new(0, 6, 0, 6),
@@ -1506,7 +1664,7 @@ function EnzoLib:CreateWindow(config)
                 AddCorner(SearchBox, 6)
                 AddPadding(SearchBox, 0, 0, 10, 10)
                 
-                -- Items
+                -- Items List
                 local ItemsList = Create("ScrollingFrame", {
                     BackgroundTransparency = 1,
                     Position = UDim2.new(0, 0, 0, 40),
@@ -1517,7 +1675,10 @@ function EnzoLib:CreateWindow(config)
                     Parent = Content
                 })
                 AddPadding(ItemsList, 4, 6, 6, 6)
-                Create("UIListLayout", {Padding = UDim.new(0, 4), Parent = ItemsList})
+                Create("UIListLayout", {
+                    Padding = UDim.new(0, 4), 
+                    Parent = ItemsList
+                })
                 
                 local itemBtns = {}
                 
@@ -1577,7 +1738,10 @@ function EnzoLib:CreateWindow(config)
                     
                     ItemBtn.MouseLeave:Connect(function()
                         local sel = multi and Dropdown.Value[name] or Dropdown.Value == name
-                        Tween(ItemBtn, {BackgroundTransparency = sel and 0.6 or 0.3, BackgroundColor3 = sel and CurrentTheme.Primary or Colors.GlassLight}, 0.1)
+                        Tween(ItemBtn, {
+                            BackgroundTransparency = sel and 0.6 or 0.3, 
+                            BackgroundColor3 = sel and CurrentTheme.Primary or Colors.GlassLight
+                        }, 0.1)
                     end)
                     
                     ItemBtn.MouseButton1Click:Connect(function()
@@ -1588,17 +1752,32 @@ function EnzoLib:CreateWindow(config)
                             local cb = ItemBtn:FindFirstChild("Frame")
                             if cb then
                                 Tween(cb, {BackgroundColor3 = nowSel and Colors.Success or Colors.BackgroundDark}, 0.15)
-                                cb:FindFirstChild("Check").Text = nowSel and "✓" or ""
+                                local check = cb:FindFirstChild("Check")
+                                if check then check.Text = nowSel and "✓" or "" end
                             end
-                            Tween(ItemBtn, {BackgroundColor3 = nowSel and CurrentTheme.Primary or Colors.GlassLight, BackgroundTransparency = nowSel and 0.6 or 0.3}, 0.15)
-                            ItemBtn:FindFirstChild("Text").TextColor3 = nowSel and Colors.Text or Colors.TextSecondary
+                            
+                            Tween(ItemBtn, {
+                                BackgroundColor3 = nowSel and CurrentTheme.Primary or Colors.GlassLight, 
+                                BackgroundTransparency = nowSel and 0.6 or 0.3
+                            }, 0.15)
+                            
+                            local textLabel = ItemBtn:FindFirstChild("Text")
+                            if textLabel then
+                                textLabel.TextColor3 = nowSel and Colors.Text or Colors.TextSecondary
+                            end
                             
                             local sel = {}
-                            for k, v in pairs(Dropdown.Value) do if v then table.insert(sel, k) end end
+                            for k, v in pairs(Dropdown.Value) do 
+                                if v then 
+                                    table.insert(sel, k) 
+                                end 
+                            end
                             BtnText.Text = #sel > 0 and table.concat(sel, ", ") or "Select..."
                             BtnText.TextColor3 = #sel > 0 and Colors.Text or Colors.TextSecondary
                             
-                            if cfg.Callback then cfg.Callback(Dropdown.Value) end
+                            if cfg.Callback then 
+                                cfg.Callback(Dropdown.Value) 
+                            end
                         else
                             Dropdown.Value = name
                             BtnText.Text = name
@@ -1606,12 +1785,22 @@ function EnzoLib:CreateWindow(config)
                             
                             for n, btn in pairs(itemBtns) do
                                 local isThis = n == name
-                                Tween(btn, {BackgroundColor3 = isThis and CurrentTheme.Primary or Colors.GlassLight, BackgroundTransparency = isThis and 0.6 or 0.3}, 0.15)
-                                btn:FindFirstChild("Text").TextColor3 = isThis and Colors.Text or Colors.TextSecondary
+                                Tween(btn, {
+                                    BackgroundColor3 = isThis and CurrentTheme.Primary or Colors.GlassLight, 
+                                    BackgroundTransparency = isThis and 0.6 or 0.3
+                                }, 0.15)
+                                
+                                local textLabel = btn:FindFirstChild("Text")
+                                if textLabel then
+                                    textLabel.TextColor3 = isThis and Colors.Text or Colors.TextSecondary
+                                end
                             end
                             
-                            if cfg.Callback then cfg.Callback(name) end
+                            if cfg.Callback then 
+                                cfg.Callback(name) 
+                            end
                             
+                            -- Close dropdown
                             Dropdown.Open = false
                             Tween(Arrow, {Rotation = 0}, 0.2)
                             Tween(Frame, {Size = UDim2.new(1, 0, 0, baseH)}, 0.25)
@@ -1626,21 +1815,25 @@ function EnzoLib:CreateWindow(config)
                     itemBtns[item] = createItem(item)
                 end
                 
+                -- Search functionality
                 SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
                     local s = SearchBox.Text:lower()
                     for name, btn in pairs(itemBtns) do
-                        btn.Visible = s == "" or name:lower():find(s, 1, true)
+                        btn.Visible = s == "" or name:lower():find(s, 1, true) ~= nil
                     end
                 end)
                 
+                -- Toggle dropdown
                 DropBtn.MouseButton1Click:Connect(function()
                     Dropdown.Open = not Dropdown.Open
+                    
                     if Dropdown.Open then
                         Tween(Arrow, {Rotation = 180}, 0.2)
                         local cnt = math.min(#items, 5)
                         local contentH = 46 + (cnt * 34) + 10
                         local totalH = baseH + 8 + contentH
                         Tween(Frame, {Size = UDim2.new(1, 0, 0, totalH)}, 0.3, Enum.EasingStyle.Back)
+<<<<<<< HEAD
                         Tween(Content, {Size = UDim2.new(1, -24, 0, contentH)}, 0.3, Enum.EasingStyle.Back)
                     else
                         Tween(Arrow, {Rotation = 0}, 0.2)
@@ -1649,6 +1842,8 @@ function EnzoLib:CreateWindow(config)
                     end
                 end)
                                         Tween(Frame, {Size = UDim2.new(1, 0, 0, totalH)}, 0.3, Enum.EasingStyle.Back)
+=======
+>>>>>>> 8cd39cc (Design F)
                         Tween(Content, {Size = UDim2.new(1, -24, 0, contentH)}, 0.3, Enum.EasingStyle.Back)
                     else
                         Tween(Arrow, {Rotation = 0}, 0.2)
@@ -1657,13 +1852,19 @@ function EnzoLib:CreateWindow(config)
                     end
                 end)
                 
-                Frame.MouseEnter:Connect(function() Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) end)
-                Frame.MouseLeave:Connect(function() Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) end)
+                Frame.MouseEnter:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) 
+                end)
+                Frame.MouseLeave:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) 
+                end)
                 
                 function Dropdown:SetItems(newItems)
                     Dropdown.Items = newItems
                     for _, c in pairs(ItemsList:GetChildren()) do
-                        if c:IsA("TextButton") then c:Destroy() end
+                        if c:IsA("TextButton") then 
+                            c:Destroy() 
+                        end
                     end
                     itemBtns = {}
                     for _, item in pairs(newItems) do
@@ -1679,14 +1880,22 @@ function EnzoLib:CreateWindow(config)
                             local cb = btn:FindFirstChild("Frame")
                             if cb then
                                 cb.BackgroundColor3 = sel and Colors.Success or Colors.BackgroundDark
-                                cb:FindFirstChild("Check").Text = sel and "✓" or ""
+                                local check = cb:FindFirstChild("Check")
+                                if check then check.Text = sel and "✓" or "" end
                             end
                             btn.BackgroundColor3 = sel and CurrentTheme.Primary or Colors.GlassLight
                             btn.BackgroundTransparency = sel and 0.6 or 0.3
-                            btn:FindFirstChild("Text").TextColor3 = sel and Colors.Text or Colors.TextSecondary
+                            local textLabel = btn:FindFirstChild("Text")
+                            if textLabel then
+                                textLabel.TextColor3 = sel and Colors.Text or Colors.TextSecondary
+                            end
                         end
                         local selected = {}
-                        for k, val in pairs(v) do if val then table.insert(selected, k) end end
+                        for k, val in pairs(v) do 
+                            if val then 
+                                table.insert(selected, k) 
+                            end 
+                        end
                         BtnText.Text = #selected > 0 and table.concat(selected, ", ") or "Select..."
                     else
                         Dropdown.Value = v
@@ -1696,7 +1905,10 @@ function EnzoLib:CreateWindow(config)
                             local isThis = name == v
                             btn.BackgroundColor3 = isThis and CurrentTheme.Primary or Colors.GlassLight
                             btn.BackgroundTransparency = isThis and 0.6 or 0.3
-                            btn:FindFirstChild("Text").TextColor3 = isThis and Colors.Text or Colors.TextSecondary
+                            local textLabel = btn:FindFirstChild("Text")
+                            if textLabel then
+                                textLabel.TextColor3 = isThis and Colors.Text or Colors.TextSecondary
+                            end
                         end
                     end
                 end
@@ -1706,7 +1918,7 @@ function EnzoLib:CreateWindow(config)
             end
             
             -- ============================================
-            -- TEXTBOX / INPUT
+            -- TEXTBOX
             -- ============================================
             function Section:AddTextbox(cfg)
                 cfg = cfg or {}
@@ -1765,18 +1977,29 @@ function EnzoLib:CreateWindow(config)
                 
                 InputBox.Focused:Connect(function()
                     local stroke = InputBox:FindFirstChildOfClass("UIStroke")
-                    if stroke then Tween(stroke, {Transparency = 0.3}, 0.2) end
+                    if stroke then 
+                        Tween(stroke, {Transparency = 0.3}, 0.2) 
+                    end
                 end)
                 
                 InputBox.FocusLost:Connect(function(enterPressed)
                     local stroke = InputBox:FindFirstChildOfClass("UIStroke")
-                    if stroke then Tween(stroke, {Transparency = 0.7}, 0.2) end
+                    if stroke then 
+                        Tween(stroke, {Transparency = 0.7}, 0.2) 
+                    end
                     Textbox.Value = InputBox.Text
-                    if cfg.Callback then cfg.Callback(InputBox.Text, enterPressed) end
+                    
+                    if cfg.Callback then 
+                        cfg.Callback(InputBox.Text, enterPressed) 
+                    end
                 end)
                 
-                Frame.MouseEnter:Connect(function() Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) end)
-                Frame.MouseLeave:Connect(function() Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) end)
+                Frame.MouseEnter:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) 
+                end)
+                Frame.MouseLeave:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) 
+                end)
                 
                 function Textbox:SetValue(v)
                     Textbox.Value = v
@@ -1853,22 +2076,31 @@ function EnzoLib:CreateWindow(config)
                     Tween(KeyBtn, {BackgroundTransparency = 0.5}, 0.2)
                 end)
                 
-                UserInputService.InputBegan:Connect(function(input, processed)
+                table.insert(Window.Connections, UserInputService.InputBegan:Connect(function(input, processed)
                     if listening then
                         if input.UserInputType == Enum.UserInputType.Keyboard then
                             listening = false
                             Keybind.Value = input.KeyCode
                             KeyBtn.Text = input.KeyCode.Name
                             Tween(KeyBtn, {BackgroundTransparency = 0.8}, 0.2)
-                            if cfg.Callback then cfg.Callback(input.KeyCode) end
+                            
+                            if cfg.Callback then 
+                                cfg.Callback(input.KeyCode) 
+                            end
                         end
                     elseif not processed and input.KeyCode == Keybind.Value then
-                        if cfg.OnPress then cfg.OnPress() end
+                        if cfg.OnPress then 
+                            cfg.OnPress() 
+                        end
                     end
-                end)
+                end))
                 
-                Frame.MouseEnter:Connect(function() Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) end)
-                Frame.MouseLeave:Connect(function() Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) end)
+                Frame.MouseEnter:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.3}, 0.15) 
+                end)
+                Frame.MouseLeave:Connect(function() 
+                    Tween(Frame, {BackgroundTransparency = 0.5}, 0.15) 
+                end)
                 
                 function Keybind:SetValue(key)
                     Keybind.Value = key
@@ -2009,7 +2241,6 @@ function EnzoLib:CreateWindow(config)
         AddCorner(Notif, 12)
         AddStroke(Notif, data.col, 1.5, 0.4)
         
-        -- Glow
         local NotifGlow = AddGlow(Notif, data.col, 15, 0.75)
         
         -- Accent Line
@@ -2111,7 +2342,9 @@ function EnzoLib:CreateWindow(config)
             notifClosed = true
             Tween(Notif, {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1}, 0.3)
             Tween(NotifGlow, {ImageTransparency = 1}, 0.3)
-            task.delay(0.3, function() Notif:Destroy() end)
+            task.delay(0.3, function() 
+                pcall(function() Notif:Destroy() end) 
+            end)
         end
         
         CloseBtn.MouseButton1Click:Connect(closeNotif)
@@ -2122,24 +2355,22 @@ function EnzoLib:CreateWindow(config)
             Tween(CloseBtn, {TextColor3 = Colors.TextMuted}, 0.1)
         end)
         
-        -- Animate
-        task.spawn(function()
+        -- Animate notification
+        table.insert(Window.Threads, task.spawn(function()
             task.wait(0.05)
             local height = 60 + ContentLabel.TextBounds.Y
             
-            -- Slide in from right
             Notif.Position = UDim2.new(1, 30, 0, 0)
             Notif.Size = UDim2.new(1, 0, 0, height)
             
             Tween(Notif, {Position = UDim2.new(0, 0, 0, 0)}, 0.4, Enum.EasingStyle.Back)
             Tween(NotifGlow, {ImageTransparency = 0.75}, 0.3)
             
-            -- Progress animation
             Tween(Progress, {Size = UDim2.new(0, 0, 1, 0)}, cfg.Duration or 5, Enum.EasingStyle.Linear)
             
             task.wait(cfg.Duration or 5)
             closeNotif()
-        end)
+        end))
     end
     
     -- ============================================
@@ -2180,6 +2411,7 @@ function EnzoLib:CreateWindow(config)
             mobileDrag = true
             mobileStart = input.Position
             mobileStartPos = MobileBtn.Position
+            
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     mobileDrag = false
@@ -2188,12 +2420,17 @@ function EnzoLib:CreateWindow(config)
         end
     end)
     
-    UserInputService.InputChanged:Connect(function(input)
+    table.insert(Window.Connections, UserInputService.InputChanged:Connect(function(input)
         if mobileDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - mobileStart
-            MobileBtn.Position = UDim2.new(mobileStartPos.X.Scale, mobileStartPos.X.Offset + delta.X, mobileStartPos.Y.Scale, mobileStartPos.Y.Offset + delta.Y)
+            MobileBtn.Position = UDim2.new(
+                mobileStartPos.X.Scale, 
+                mobileStartPos.X.Offset + delta.X, 
+                mobileStartPos.Y.Scale, 
+                mobileStartPos.Y.Offset + delta.Y
+            )
         end
-    end)
+    end))
     
     MobileBtn.MouseButton1Click:Connect(function()
         Window:Toggle()
@@ -2208,15 +2445,17 @@ function EnzoLib:CreateWindow(config)
         Tween(MobileGlow, {ImageTransparency = 0.7}, 0.15)
     end)
     
-    -- Update mobile button visibility based on window
+    -- Update mobile button on toggle
     local origToggle = Window.Toggle
-    function Window:Toggle()
+    Window.Toggle = function(self)
         self.Visible = not self.Visible
+        
         if self.Visible then
             Main.Visible = true
             Main.Size = UDim2.new(0, size.X.Offset, 0, 0)
             Main.BackgroundTransparency = 1
-            Tween(Main, {Size = size, BackgroundTransparency = 0.05}, 0.5, Enum.EasingStyle.Back)
+            
+            Tween(Main, {Size = size, BackgroundTransparency = 1 - (currentOpacity * 0.95)}, 0.5, Enum.EasingStyle.Back)
             Tween(Blur, {Size = 15}, 0.3)
             Tween(MainGlow, {ImageTransparency = 0.85}, 0.3)
             Tween(MobileBtn, {Position = UDim2.new(0, -60, 0.5, -25)}, 0.3)
@@ -2225,14 +2464,28 @@ function EnzoLib:CreateWindow(config)
             Tween(Blur, {Size = 0}, 0.3)
             Tween(MainGlow, {ImageTransparency = 1}, 0.3)
             Tween(MobileBtn, {Position = UDim2.new(0, 15, 0.5, -25)}, 0.3)
+            
             task.delay(0.3, function()
-                if not self.Visible then Main.Visible = false end
+                if not self.Visible then 
+                    Main.Visible = false 
+                end
             end)
         end
     end
     
-    getgenv().EnzoUILib = Window
+    -- Store in global
+    if getgenv then
+        getgenv().EnzoUILib = Window
+    end
+    
     return Window
 end
 
+<<<<<<< HEAD
 return EnzoLib
+=======
+-- ============================================
+-- RETURN LIBRARY (WAJIB ADA!)
+-- ============================================
+return EnzoLib
+>>>>>>> 8cd39cc (Design F)
