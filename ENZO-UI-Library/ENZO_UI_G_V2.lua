@@ -3118,8 +3118,7 @@ function EnzoLib:CreateWindow(config)
                     end
                     itemBtns = {}
                     allItems = {}
-                    for idx, item in ipairs(newItems)
-			                    -- Continuing from Dropdown:SetItems
+                                        -- Ini adalah penutup dari Dropdown:SetItems
                     for idx, item in ipairs(newItems) do
                         itemBtns[item] = createItem(item, idx)
                     end
@@ -3189,7 +3188,7 @@ function EnzoLib:CreateWindow(config)
                 return {Frame = Frame}
             end
             
-            -- ========== TEXTBOX (Legacy support) ==========
+            -- ========== TEXTBOX (Legacy) ==========
             function Section:AddTextBox(cfg)
                 return Section:AddInput(cfg)
             end
