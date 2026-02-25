@@ -1803,7 +1803,7 @@ end
                     Font = Enum.Font.GothamBold,
                     Text = cfg.Title or "Toggle",
                     TextColor3 = Colors.Text,
-                    TextSize = 10,
+                    TextSize = 3,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = Frame
                 })
