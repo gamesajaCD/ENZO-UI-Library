@@ -677,7 +677,7 @@ function EnzoLib:CreateWindow(config)
         BackgroundColor3 = Colors.BackgroundLight,
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(0.5, 0, 0.5, 0),
-        Size = UDim2.new(0, 280, 0, 30),
+        Size = UDim2.new(0, 280, 0, 500),
         ZIndex = 11,
         Parent = Header
     })
@@ -1803,7 +1803,7 @@ end
                     Font = Enum.Font.GothamBold,
                     Text = cfg.Title or "Toggle",
                     TextColor3 = Colors.Text,
-                    TextSize = 3,
+                    TextSize = 10,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = Frame
                 })
